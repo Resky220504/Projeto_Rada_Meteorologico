@@ -14,7 +14,6 @@
 
     <style>
         :root {
-            /* A cor primária agora herda a cor secundária (verde) para unificar o tema */
             --secondary-color: #198754;
             --primary-color: var(--secondary-color); 
             --accent-color: #20c997;
@@ -55,7 +54,6 @@
             color: white;
         }
         
-        /* Melhorias de acessibilidade */
         .skip-link {
             position: absolute;
             top: -40px;
@@ -63,7 +61,7 @@
             background: #000;
             color: white;
             padding: 8px;
-            z-index: 100;
+            z-index: 1000;
             text-decoration: none;
             border-radius: 0 0 4px 4px;
         }
@@ -73,7 +71,6 @@
         }
         
         .focus-visible:focus {
-            /* Cor do anel de foco atualizada para usar a cor do tema */
             outline: 3px solid var(--primary-color);
             outline-offset: 2px;
         }
@@ -82,7 +79,6 @@
             filter: contrast(1.4);
         }
         
-        /* Para leitores de tela */
         .sr-only {
             position: absolute;
             width: 1px;
@@ -107,7 +103,7 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-    <a href="#main-content" class="skip-link focus-visible">Pular para o conteúdo principal</a>
+    <!--<a href="#main-content" class="skip-link focus-visible">Pular para o conteúdo principal</a>-->
     
     <nav class="navbar py-4" aria-label="Navegação principal">
         <div class="container mx-auto px-4">
@@ -123,11 +119,12 @@
                 
                 <div class="hidden md:flex space-x-6">
                     <a href="index.html" class="text-gray-200 font-medium hover:text-white transition focus-visible">Dashboard</a>
+                    <a href="Tabela_Todos_Municipios.html" class="text-gray-200 hover:text-white transition focus-visible">Tabela de Municípios</a>
                     <a href="Contato.html" class="text-gray-200 hover:text-white transition focus-visible">Contato</a>
                     <a href="Sobre.html" class="text-gray-200 hover:text-white transition focus-visible">Sobre</a>
                 </div>
                 
-                <div class="flex items-center space-x-2">
+                <div class="hidden sm:flex items-center space-x-2">
                     <button id="contrast-toggle" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Alternar alto contraste">
                         <i class="fas fa-adjust"></i>
                     </button>
@@ -148,10 +145,10 @@
             </div>
             
             <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2" role="menu">
-                <a href="index.html" class="block py-2 px-4 bg-green-50 text-primary rounded-md focus-visible" role="menuitem">Dashboard</a>
-                <a href="Tabela_todos_Municipios.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible" role="menuitem">Tabela de Municípios</a>
-                <a href="Contato.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible" role="menuitem">Contato</a>
-                <a href="Sobre.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible" role="menuitem">Sobre</a>
+                <a href="index.html" class="block py-2 px-4 bg-green-100 text-green-800 font-medium rounded-md focus-visible" role="menuitem">Dashboard</a>
+                <a href="Tabela_Todos_Municipios.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Tabela de Municípios</a>
+                <a href="Contato.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Contato</a>
+                <a href="Sobre.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Sobre</a>
             </div>
         </div>
     </nav>
@@ -161,13 +158,13 @@
             <div class="mb-8">
                 <h2 id="current-weather-heading" class="text-2xl font-bold text-gray-800 mb-4">Previsão do Tempo</h2>
                 <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-700">Condições Atuais</h3>
                             <p class="text-gray-600">Atualizado em: <span id="current-date" aria-live="polite"></span></p>
                         </div>
-                        <div class="flex items-center mt-4 md:mt-0 space-x-4">
-                            <div>
+                        <div class="flex flex-wrap items-center justify-start md:justify-end gap-4 w-full md:w-auto">
+                            <div class="flex items-center">
                                 <i class="fas fa-globe-americas text-primary mr-2" aria-hidden="true"></i>
                                 <label for="state-selector" class="sr-only">Selecionar Estado</label>
                                 <select id="state-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus-visible">
@@ -176,7 +173,7 @@
                                     <option value="MT">Mato Grosso</option>
                                 </select>
                             </div>
-                            <div>
+                            <div class="flex items-center">
                                 <i class="fas fa-map-marker-alt text-primary mr-2" aria-hidden="true"></i>
                                 <label for="city-selector" class="sr-only">Selecionar Município</label>
                                 <select id="city-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus-visible">
@@ -185,8 +182,8 @@
                         </div>
                     </div>
                     
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-green-50 rounded-lg p-4 flex items-center" aria-label="Condições atuais do tempo">
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-green-50 rounded-lg p-4 flex items-center md:col-span-1 lg:col-span-1" aria-label="Condições atuais do tempo">
                             <div class="w-20 h-20 flex-shrink-0 flex items-center justify-center">
                                 <img id="current-weather-icon" src="" alt="Ícone do tempo atual" class="w-full h-full">
                             </div>
@@ -196,7 +193,7 @@
                             </div>
                         </div>
                         
-                        <div class="bg-white border rounded-lg p-4" aria-label="Detalhes meteorológicos">
+                        <div class="bg-white border rounded-lg p-4 md:col-span-1 lg:col-span-1" aria-label="Detalhes meteorológicos">
                             <h4 class="font-semibold text-gray-700 mb-2">Detalhes</h4>
                             <div class="space-y-2">
                                 <div class="flex justify-between">
@@ -214,7 +211,7 @@
                             </div>
                         </div>
                         
-                        <div id="weather-alert" class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4 hidden" role="alert" aria-label="Alerta meteorológico">
+                        <div id="weather-alert" class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4 hidden md:col-span-2 lg:col-span-1" role="alert" aria-label="Alerta meteorológico">
                             <div class="flex items-center">
                                 <i class="fas fa-exclamation-triangle text-yellow-700 mr-2" aria-hidden="true"></i>
                                 <h4 id="alert-title" class="font-semibold text-gray-700">Alerta Meteorológico</h4>
@@ -229,7 +226,7 @@
         <section aria-labelledby="forecast-heading">
             <div class="mb-8">
                 <h3 id="forecast-heading" class="text-xl font-bold text-gray-800 mb-4">Previsão para os Próximos Dias</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para o primeiro dia">
                         <div class="bg-secondary text-white py-2 text-center">
                             <p class="font-semibold" id="day-1-date">--/--</p>
@@ -273,7 +270,7 @@
             <div class="mb-8">
                 <h3 id="data-access-heading" class="text-xl font-bold text-gray-800 mb-4">Dados Meteorológicos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <a href="Tabela_todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Acessar tabela completa de municípios">
+                    <a href="Tabela_Todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Acessar tabela completa de municípios">
                         <div class="mr-4 text-primary">
                             <i class="fas fa-table text-3xl" aria-hidden="true"></i>
                         </div>
@@ -284,7 +281,7 @@
                         <i class="fas fa-chevron-right text-gray-400 ml-auto" aria-hidden="true"></i>
                     </a>
                     
-                    <a href="Tabela_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Importar ou exportar dados meteorológicos">
+                    <a href="#" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Importar ou exportar dados meteorológicos">
                         <div class="mr-4 text-primary">
                             <i class="fas fa-file-excel text-3xl" aria-hidden="true"></i>
                         </div>
@@ -320,7 +317,7 @@
                     <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
                     <ul class="space-y-2">
                         <li><a href="index.html" class="text-gray-300 hover:text-white transition focus-visible">Dashboard</a></li>
-                        <li><a href="Tabela_todos_Municipios.html" class="text-gray-300 hover:text-white transition focus-visible">Tabela de Municípios</a></li>
+                        <li><a href="Tabela_Todos_Municipios.html" class="text-gray-300 hover:text-white transition focus-visible">Tabela de Municípios</a></li>
                         <li><a href="Contato.html" class="text-gray-300 hover:text-white transition focus-visible">Contato</a></li>
                         <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition focus-visible">Sobre</a></li>
                     </ul>
@@ -356,8 +353,6 @@
      crossorigin=""></script>
 
     <script>
-        // --- SEÇÃO DE DADOS E LÓGICA (DASHBOARD E MAPA) ---
-
         const apiKey = '3a8483478c92616b740ea1e354c8a8e9'; 
 
         const citiesByState = {
@@ -369,7 +364,6 @@
         const stateSelector = document.getElementById('state-selector');
         const citySelector = document.getElementById('city-selector');
 
-        // --- LÓGICA DO DASHBOARD ---
         function populateCitySelector(state) {
             citySelector.innerHTML = '';
             const cities = citiesByState[state];
@@ -489,7 +483,6 @@
             return Object.keys(hashmap).reduce((a, b) => hashmap[a] > hashmap[b] ? a : b);
         }
 
-        // --- LÓGICA DO MAPA ---
         const map = L.map('map').setView([-12.0, -60.0], 5);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -541,7 +534,6 @@
             await Promise.all(promises);
         }
 
-        // --- EVENT LISTENERS E INICIALIZAÇÃO GERAL ---
         stateSelector.addEventListener('change', (event) => {
             const selectedState = event.target.value;
             populateCitySelector(selectedState);
@@ -568,7 +560,6 @@
             fetchAndPlaceMarkers();
         });
 
-        // --- SCRIPTS DE ACESSIBILIDADE E UI ---
         document.getElementById('mobile-menu-button').addEventListener('click', function() {
             const menu = document.getElementById('mobile-menu');
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
