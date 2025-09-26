@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sobre - Portal Meteorológico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00457C;
+            --secondary-color: #198754;
+            --dark-color: #198754;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f7fa;
+        }
+        .navbar {
+            background-color: var(--dark-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        .focus-visible:focus {
+            outline: 3px solid #0d6efd;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <nav class="navbar py-4" aria-label="Navegação principal">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <img src="/Logo/radar_meteorológico.png" alt="Portal Meteorológico" class="h-12 w-auto">
+                    <h1 class="text-xl font-bold text-white">Radar Meteorológico</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-gray-200 font-medium hover:text-white transition focus-visible">Dashboard</a>
+                    <a href="Contato.html" class="text-gray-200 hover:text-white transition focus-visible">Contato</a>
+                    <a href="Sobre.html" class="text-gray-200 hover:text-white transition focus-visible">Sobre</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-200 hover:text-white focus-visible" aria-expanded="false" aria-controls="mobile-menu">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+                <a href="index.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible">Dashboard</a>
+                <a href="Contato.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible">Contato</a>
+                <a href="Sobre.html" class="block py-2 px-4 bg-blue-50 text-blue-700 rounded-md focus-visible">Sobre</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-12">
+        <div class="bg-white rounded-lg shadow-lg p-8 md:p-12 mx-auto max-w-4xl">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-6 border-b pb-4">Sobre o Portal Meteorológico</h1>
+            
+            <section class="mb-8">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4" style="color: var(--secondary-color);">Nossa Missão</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    Nossa missão é fornecer dados meteorológicos precisos, acessíveis e em tempo real para os municípios dos estados de Rondônia, Acre e Mato Grosso. Acreditamos que o acesso à informação climática de qualidade é fundamental para a segurança, planejamento e desenvolvimento sustentável da região amazônica.
+                </p>
+            </section>
+            
+            <section class="mb-8">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4" style="color: var(--secondary-color);">Nossos Dados</h2>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                    Utilizamos a API da <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">OpenWeatherMap</a>, uma das fontes mais confiáveis de dados meteorológicos do mundo. Isso nos permite oferecer previsões do tempo, informações sobre temperatura, umidade, vento e outras variáveis climáticas com alta precisão.
+                </p>
+                <p class="text-gray-600 leading-relaxed">
+                    Todos os dados são atualizados constantemente para garantir que você sempre tenha as informações mais recentes à sua disposição, seja para planejar suas atividades diárias, monitorar a agricultura ou para a defesa civil.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4" style="color: var(--secondary-color);">Quem Somos</h2>
+                <p class="text-gray-600 leading-relaxed">
+                    Somos uma equipe apaixonada por tecnologia e meteorologia, dedicada a criar ferramentas que façam a diferença na vida das pessoas. Este portal é um projeto desenvolvido com o objetivo de democratizar o acesso à informação climática na Amazônia Ocidental, uma região de extrema importância para o Brasil e para o mundo.
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer py-8 mt-auto" role="contentinfo">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Portal Meteorológico</h4>
+                    <p class="text-gray-300">Fornecendo informações meteorológicas precisas para a região amazônica.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition focus-visible">Dashboard</a></li>
+                        <li><a href="Tabela_todos_Municipios.html" class="text-gray-300 hover:text-white transition focus-visible">Tabela de Municípios</a></li>
+                        <li><a href="Contato.html" class="text-gray-300 hover:text-white transition focus-visible">Contato</a></li>
+                        <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition focus-visible">Sobre</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contato</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center"><i class="fas fa-phone mr-2"></i><span>(69) 99264-6823</span></li>
+                        <li class="flex items-center"><i class="fas fa-envelope mr-2"></i><span>contato@Portalmeteorológico</span></li>
+                        <li class="flex items-center"><i class="fas fa-map-marker-alt mr-2"></i><span>Antonio Fraga Moreira, 3816</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2025 Portal Meteorológico - Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

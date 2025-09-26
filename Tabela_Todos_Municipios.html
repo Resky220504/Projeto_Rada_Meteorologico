@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tabela de Dados Históricos - Portal Meteorológico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #0d6efd;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white shadow-md py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-xl font-bold text-gray-800">Dados Meteorológicos Históricos</h1>
+            </div>
+            <a href="index.html" class="text-blue-600 hover:underline">Voltar ao Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Painel de Controle</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button id="fetch-button" class="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-sync-alt"></i> Atualizar e Salvar
+                </button>
+                <div>
+                    <label for="state-filter" class="block text-sm font-medium text-gray-700">Filtrar por Estado</label>
+                    <select id="state-filter" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="todos">Todos os Estados</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="AC">Acre</option>
+                        <option value="MT">Mato Grosso</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="city-filter" class="block text-sm font-medium text-gray-700">Filtrar por Município</label>
+                    <select id="city-filter" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" disabled>
+                        <option value="todos">Selecione um estado primeiro</option>
+                    </select>
+                </div>
+                 <button id="download-button" class="bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 transition duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i> Baixar Dados (CSV)
+                </button>
+            </div>
+             <div id="loading" class="hidden flex items-center gap-2 text-gray-600 mt-4">
+                <div class="spinner"></div>
+                <span>Buscando dados... Isso pode levar um momento.</span>
+            </div>
+
+            <div class="mt-6 border-t pt-6">
+                 <h3 class="text-lg font-semibold mb-2">Consultar Histórico</h3>
+                 <div class="flex flex-wrap items-center gap-4">
+                    <select id="history-selector" class="border rounded-md px-3 py-2 w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Nenhum histórico salvo</option>
+                    </select>
+                    <button id="clear-history-button" class="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-trash"></i> Limpar Histórico
+                    </button>
+                 </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table id="weather-table" class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Município</th>
+                            <th scope="col" class="px-6 py-3">Estado</th>
+                            <th scope="col" class="px-6 py-3">Data da Coleta</th>
+                            <th scope="col" class="px-6 py-3">Temperatura (°C)</th>
+                            <th scope="col" class="px-6 py-3">Umidade (%)</th>
+                            <th scope="col" class="px-6 py-3">Vento (km/h)</th>
+                            <th scope="col" class="px-6 py-3">Condição</th>
+                        </tr>
+                    </thead>
+                    <tbody id="weather-table-body">
+                       <tr>
+                           <td colspan="7" class="text-center p-8 text-gray-500">Clique em "Atualizar Dados" para carregar as informações ou selecione um registro do histórico.</td>
+                       </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const apiKey = '3a8483478c92616b740ea1e354c8a8e9'; 
+
+        const citiesByState = {
+            'RO': { 'Alta Floresta D\'Oeste': { lat: -11.9283, lon: -61.9961 }, 'Alto Alegre dos Parecis': { lat: -12.128, lon: -61.821 }, 'Alto Paraíso': { lat: -9.71667, lon: -63.3169 }, 'Alvorada D\'Oeste': { lat: -11.3458, lon: -62.355 }, 'Ariquemes': { lat: -9.9133, lon: -63.0408 }, 'Buritis': { lat: -10.2033, lon: -63.8292 }, 'Cabixi': { lat: -13.4936, lon: -60.5511 }, 'Cacaulândia': { lat: -10.3478, lon: -62.8931 }, 'Cacoal': { lat: -11.4386, lon: -61.4478 }, 'Campo Novo de Rondônia': { lat: -10.5708, lon: -63.6192 }, 'Candeias do Jamari': { lat: -8.79056, lon: -63.7025 }, 'Castanheiras': { lat: -11.4178, lon: -61.9483 }, 'Cerejeiras': { lat: -13.1894, lon: -60.8161 }, 'Chupinguaia': { lat: -12.5492, lon: -60.8994 }, 'Colorado do Oeste': { lat: -13.1331, lon: -60.5503 }, 'Corumbiara': { lat: -12.9864, lon: -60.9419 }, 'Costa Marques': { lat: -12.4419, lon: -64.2294 }, 'Cujubim': { lat: -9.37028, lon: -62.5975 }, 'Espigão D\'Oeste': { lat: -11.525, lon: -61.0208 }, 'Governador Jorge Teixeira': { lat: -10.8631, lon: -62.7761 }, 'Guajará-Mirim': { lat: -10.7828, lon: -65.3361 }, 'Itapuã do Oeste': { lat: -9.28056, lon: -63.155 }, 'Jaru': { lat: -10.4389, lon: -62.4664 }, 'Ji-Paraná': { lat: -10.885, lon: -61.945 }, 'Machadinho D\'Oeste': { lat: -9.43194, lon: -61.98 }, 'Ministro Andreazza': { lat: -11.1969, lon: -61.5161 }, 'Mirante da Serra': { lat: -11.1736, lon: -62.6719 }, 'Monte Negro': { lat: -10.2933, lon: -63.3236 }, 'Nova Brasilândia D\'Oeste': { lat: -11.7108, lon: -62.3397 }, 'Nova Mamoré': { lat: -10.4072, lon: -65.3217 }, 'Nova União': { lat: -11.0503, lon: -62.5694 }, 'Novo Horizonte do Oeste': { lat: -11.7056, lon: -62.0017 }, 'Ouro Preto do Oeste': { lat: -10.7481, lon: -62.2158 }, 'Parecis': { lat: -12.21, lon: -61.5958 }, 'Pimenta Bueno': { lat: -11.6725, lon: -61.1925 }, 'Pimenteiras do Oeste': { lat: -13.4739, lon: -61.0458 }, 'Porto Velho': { lat: -8.7619, lon: -63.9039 }, 'Presidente Médici': { lat: -11.175, lon: -61.9014 }, 'Primavera de Rondônia': { lat: -11.8153, lon: -61.3208 }, 'Rio Crespo': { lat: -9.73333, lon: -62.9094 }, 'Rolim de Moura': { lat: -11.7258, lon: -61.7772 }, 'Santa Luzia D\'Oeste': { lat: -11.9139, lon: -61.7825 }, 'São Felipe D\'Oeste': { lat: -11.9011, lon: -61.4722 }, 'São Francisco do Guaporé': { lat: -12.0622, lon: -63.5756 }, 'São Miguel do Guaporé': { lat: -11.6917, lon: -62.7092 }, 'Seringueiras': { lat: -11.7333, lon: -63.0239 }, 'Teixeirópolis': { lat: -10.9667, lon: -62.2536 }, 'Theobroma': { lat: -10.2333, lon: -62.3417 }, 'Urupá': { lat: -11.135, lon: -62.365 }, 'Vale do Anari': { lat: -9.88333, lon: -62.15 }, 'Vale do Paraíso': { lat: -10.4286, lon: -62.1389 }, 'Vilhena': { lat: -12.7406, lon: -60.1458 } },
+            'AC': { 'Acrelândia': { lat: -9.82778, lon: -66.8975 }, 'Assis Brasil': { lat: -10.9411, lon: -69.5703 }, 'Brasiléia': { lat: -11.0119, lon: -68.7481 }, 'Bujari': { lat: -9.83222, lon: -67.9511 }, 'Capixaba': { lat: -10.5739, lon: -67.6833 }, 'Cruzeiro do Sul': { lat: -7.6297, lon: -72.6708 }, 'Epitaciolândia': { lat: -11.0194, lon: -68.7369 }, 'Feijó': { lat: -8.16389, lon: -70.3536 }, 'Jordão': { lat: -9.43278, lon: -71.8883 }, 'Mâncio Lima': { lat: -7.61417, lon: -72.8958 }, 'Manoel Urbano': { lat: -8.83889, lon: -69.2597 }, 'Marechal Thaumaturgo': { lat: -8.93972, lon: -72.7381 }, 'Plácido de Castro': { lat: -10.3344, lon: -67.1856 }, 'Porto Acre': { lat: -9.58722, lon: -67.5333 }, 'Porto Walter': { lat: -8.26861, lon: -72.7439 }, 'Rio Branco': { lat: -9.974, lon: -67.81 }, 'Rodrigues Alves': { lat: -7.74028, lon: -72.6481 }, 'Santa Rosa do Purus': { lat: -9.43833, lon: -70.4939 }, 'Sena Madureira': { lat: -9.0667, lon: -68.6569 }, 'Senador Guiomard': { lat: -10.1503, lon: -67.5367 }, 'Taruacá': { lat: -8.1614, lon: -70.7661 }, 'Xapuri': { lat: -10.6519, lon: -68.5042 } },
+            'MT': { 'Acorizal': { lat: -15.1953, lon: -56.3683 }, 'Água Boa': { lat: -14.3475, lon: -52.1558 }, 'Alta Floresta': { lat: -9.87556, lon: -56.0861 }, 'Alto Araguaia': { lat: -17.3147, lon: -53.2153 }, 'Alto Boa Vista': { lat: -11.6742, lon: -51.385 }, 'Alto Garças': { lat: -16.945, lon: -53.6289 }, 'Alto Paraguai': { lat: -14.5153, lon: -56.48 }, 'Alto Taquari': { lat: -17.8258, lon: -53.2825 }, 'Apiacás': { lat: -9.54167, lon: -57.4514 }, 'Araguaiana': { lat: -15.7278, lon: -51.8294 }, 'Araguainha': { lat: -16.855, lon: -53.0319 }, 'Araputanga': { lat: -15.4678, lon: -58.3497 }, 'Arenápolis': { lat: -14.4519, lon: -56.8458 }, 'Aripuanã': { lat: -10.165, lon: -59.4569 }, 'Barão de Melgaço': { lat: -16.195, lon: -55.9675 }, 'Barra do Bugres': { lat: -15.0747, lon: -57.1811 }, 'Barra do Garças': { lat: -15.8903, lon: -52.2567 }, 'Bom Jesus do Araguaia': { lat: -12.1833, lon: -51.35 }, 'Brasnorte': { lat: -12.1539, lon: -57.9786 }, 'Cáceres': { lat: -16.0708, lon: -57.6792 }, 'Campinápolis': { lat: -14.5028, lon: -52.8875 }, 'Campo Novo do Parecis': { lat: -13.6769, lon: -57.8889 }, 'Campo Verde': { lat: -15.545, lon: -55.1683 }, 'Campos de Júlio': { lat: -13.5244, lon: -59.0883 }, 'Canabrava do Norte': { lat: -11.0181, lon: -51.8317 }, 'Canarana': { lat: -13.5539, lon: -52.2706 }, 'Carlinda': { lat: -9.95, lon: -55.85 }, 'Castanheira': { lat: -11.1072, lon: -58.6017 }, 'Chapada dos Guimarães': { lat: -15.4606, lon: -55.7497 }, 'Cláudia': { lat: -11.5167, lon: -55.2 }, 'Cocalinho': { lat: -14.3853, lon: -51.0114 }, 'Colíder': { lat: -10.8189, lon: -55.4561 }, 'Colniza': { lat: -9.48889, lon: -59.215 }, 'Comodoro': { lat: -13.6639, lon: -59.785 }, 'Confresa': { lat: -10.6433, lon: -51.5694 }, 'Conquista D\'Oeste': { lat: -14.5511, lon: -59.5786 }, 'Cotriguaçu': { lat: -9.84917, lon: -58.2439 }, 'Cuiabá': { lat: -15.5989, lon: -56.0949 }, 'Curvelândia': { lat: -15.6186, lon: -57.9422 }, 'Denise': { lat: -14.7381, lon: -57.0531 }, 'Diamantino': { lat: -14.4086, lon: -56.4458 }, 'Dom Aquino': { lat: -15.8075, lon: -54.9189 }, 'Feliz Natal': { lat: -12.3917, lon: -54.9192 }, 'Figueirópolis D\'Oeste': { lat: -15.4419, lon: -58.7306 }, 'Gaúcha do Norte': { lat: -13.2425, lon: -53.0789 }, 'General Carneiro': { lat: -15.7083, lon: -52.7567 }, 'Glória D\'Oeste': { lat: -15.7558, lon: -58.3061 }, 'Guarantã do Norte': { lat: -9.78694, lon: -54.8889 }, 'Guiratinga': { lat: -16.3475, lon: -53.7611 }, 'Indiavaí': { lat: -15.4953, lon: -58.5539 }, 'Ipiranga do Norte': { lat: -12.3561, lon: -56.065 }, 'Itanhangá': { lat: -12.1625, lon: -56.6669 }, 'Itaúba': { lat: -11.05, lon: -55.2833 }, 'Itiquira': { lat: -17.21, lon: -54.1458 }, 'Jaciara': { lat: -15.9653, lon: -54.9683 }, 'Jangada': { lat: -15.2392, lon: -56.4908 }, 'Jauru': { lat: -15.3403, lon: -58.8781 }, 'Juara': { lat: -11.2539, lon: -57.5186 }, 'Juína': { lat: -11.3819, lon: -58.7383 }, 'Juruena': { lat: -10.3239, lon: -58.3619 }, 'Juscimeira': { lat: -16.0506, lon: -54.8856 }, 'Lambari D\'Oeste': { lat: -15.3283, lon: -58.0169 }, 'Lucas do Rio Verde': { lat: -13.05, lon: -55.9167 }, 'Luciara': { lat: -10.7583, lon: -50.5694 }, 'Marcelândia': { lat: -11.05, lon: -54.4333 }, 'Matupá': { lat: -10.1711, lon: -54.935 }, 'Mirassol d\'Oeste': { lat: -15.6744, lon: -58.0861 }, 'Nobres': { lat: -14.7208, lon: -56.3289 }, 'Nortelândia': { lat: -14.4547, lon: -56.8033 }, 'Nossa Senhora do Livramento': { lat: -15.765, lon: -56.3458 }, 'Nova Bandeirantes': { lat: -9.84583, lon: -57.8011 }, 'Nova Brasilândia': { lat: -14.9569, lon: -54.965 }, 'Nova Canaã do Norte': { lat: -10.6833, lon: -55.7167 }, 'Nova Guarita': { lat: -10.3333, lon: -55.4333 }, 'Nova Lacerda': { lat: -14.4681, lon: -59.6067 }, 'Nova Marilândia': { lat: -14.2889, lon: -56.9733 }, 'Nova Maringá': { lat: -13.0044, lon: -57.0603 }, 'Nova Monte Verde': { lat: -9.96667, lon: -57.5333 }, 'Nova Mutum': { lat: -13.84, lon: -56.0744 }, 'Nova Nazaré': { lat: -14.7333, lon: -51.8167 }, 'Nova Olímpia': { lat: -14.7961, lon: -57.2881 }, 'Nova Santa Helena': { lat: -10.8833, lon: -55.0833 }, 'Nova Ubiratã': { lat: -12.9833, lon: -55.25 }, 'Nova Xavantina': { lat: -14.6739, lon: -52.3514 }, 'Novo Horizonte do Norte': { lat: -11.4167, lon: -57.35 }, 'Novo Mundo': { lat: -9.9, lon: -55.1833 }, 'Novo Santo Antônio': { lat: -12.5833, lon: -51.25 }, 'Novo São Joaquim': { lat: -14.9069, lon: -53.0189 }, 'Paranaíta': { lat: -9.66667, lon: -56.4833 }, 'Paranatinga': { lat: -14.4289, lon: -54.0506 }, 'Pedra Preta': { lat: -16.6261, lon: -54.4758 }, 'Peixoto de Azevedo': { lat: -10.2228, lon: -54.9781 }, 'Planalto da Serra': { lat: -14.6667, lon: -55.15 }, 'Poconé': { lat: -16.2569, lon: -56.6225 }, 'Pontal do Araguaia': { lat: -15.8953, lon: -52.0114 }, 'Ponte Branca': { lat: -16.7619, lon: -52.8317 }, 'Pontes e Lacerda': { lat: -15.2261, lon: -59.3353 }, 'Porto Alegre do Norte': { lat: -10.8667, lon: -51.6333 }, 'Porto dos Gaúchos': { lat: -11.5239, lon: -57.4158 }, 'Porto Esperidião': { lat: -15.8542, lon: -58.4631 }, 'Porto Estrela': { lat: -15.3408, lon: -57.2181 }, 'Poxoréu': { lat: -15.8369, lon: -54.3892 }, 'Primavera do Leste': { lat: -15.5589, lon: -54.2958 }, 'Querência': { lat: -12.5833, lon: -52.3667 }, 'Reserva do Cabaçal': { lat: -15.0833, lon: -58.45 }, 'Ribeirão Cascalheira': { lat: -12.94, lon: -51.8239 }, 'Ribeirãozinho': { lat: -16.1667, lon: -52.6833 }, 'Rio Branco': { lat: -15.2539, lon: -58.1189 }, 'Rondolândia': { lat: -11.3833, lon: -61.4333 }, 'Rondonópolis': { lat: -16.4708, lon: -54.6358 }, 'Rosário Oeste': { lat: -14.8361, lon: -56.4281 }, 'Salto do Céu': { lat: -15.1333, lon: -58.15 }, 'Santa Carmem': { lat: -11.9167, lon: -55.2333 }, 'Santa Cruz do Xingu': { lat: -11.0833, lon: -51.8 }, 'Santa Rita do Trivelato': { lat: -13.8167, lon: -55.2667 }, 'Santa Terezinha': { lat: -10.4667, lon: -50.5167 }, 'Santo Afonso': { lat: -14.6333, lon: -56.8833 }, 'Santo Antônio do Leste': { lat: -14.8, lon: -53.6167 }, 'Santo Antônio do Leverger': { lat: -15.8658, lon: -56.0775 }, 'São Félix do Araguaia': { lat: -11.6167, lon: -50.6667 }, 'São José do Povo': { lat: -16.4667, lon: -54.2833 }, 'São José do Rio Claro': { lat: -13.45, lon: -56.7167 }, 'São José do Xingu': { lat: -10.8833, lon: -52.35 }, 'São José dos Quatro Marcos': { lat: -15.6333, lon: -58.1833 }, 'São Pedro da Cipa': { lat: -15.9667, lon: -54.9167 }, 'Sapezal': { lat: -13.5417, lon: -58.85 }, 'Serra Nova Dourada': { lat: -12.15, lon: -51.4667 }, 'Sinop': { lat: -11.8667, lon: -55.5 }, 'Sorriso': { lat: -12.55, lon: -55.7167 }, 'Tabaporã': { lat: -11.2833, lon: -56.9167 }, 'Tapurah': { lat: -12.7167, lon: -56.55 }, 'Terra Nova do Norte': { lat: -10.5167, lon: -55.2333 }, 'Tesouro': { lat: -16.0833, lon: -53.5333 }, 'Torixoréu': { lat: -16.2, lon: -52.55 }, 'União do Sul': { lat: -11.5, lon: -54.35 }, 'Vale de São Domingos': { lat: -15.0167, lon: -58.55 }, 'Várzea Grande': { lat: -15.6469, lon: -56.1322 }, 'Vera': { lat: -12.3, lon: -55.3167 }, 'Vila Bela da Santíssima Trindade': { lat: -15.0, lon: -59.95 }, 'Vila Rica': { lat: -10.0167, lon: -51.1167 } }
+        };
+
+        const fetchButton = document.getElementById('fetch-button');
+        const tableBody = document.getElementById('weather-table-body');
+        const loadingIndicator = document.getElementById('loading');
+        const historySelector = document.getElementById('history-selector');
+        const clearHistoryButton = document.getElementById('clear-history-button');
+        const downloadButton = document.getElementById('download-button');
+        const stateFilter = document.getElementById('state-filter');
+        const cityFilter = document.getElementById('city-filter');
+
+        // **FUNÇÃO OTIMIZADA PARA POPULAR A TABELA**
+        function populateTable(dataArray) {
+            const rowsHtml = dataArray.map(data => {
+                const date = new Date(data.timestamp);
+                const formattedDate = date.toLocaleString('pt-BR');
+                return `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${data.city}</td>
+                        <td class="px-6 py-4">${data.state}</td>
+                        <td class="px-6 py-4">${formattedDate}</td>
+                        <td class="px-6 py-4">${data.temp}°C</td>
+                        <td class="px-6 py-4">${data.humidity}%</td>
+                        <td class="px-6 py-4">${data.wind} km/h</td>
+                        <td class="px-6 py-4 capitalize">${data.condition}</td>
+                    </tr>
+                `;
+            }).join('');
+            tableBody.innerHTML = rowsHtml || '<tr><td colspan="7" class="text-center p-8">Nenhum dado encontrado.</td></tr>';
+        }
+
+        async function fetchAllWeatherData() {
+            loadingIndicator.classList.remove('hidden');
+            fetchButton.disabled = true;
+            
+            const allCitiesData = [];
+            const timestamp = new Date().toISOString();
+            const citiesToFetch = [];
+
+            for (const state in citiesByState) {
+                for (const city in citiesByState[state]) {
+                    citiesToFetch.push({ state, city, ...citiesByState[state][city] });
+                }
+            }
+            
+            // Usando Promise.all para buscas mais rápidas (com controle de concorrência)
+            const promises = citiesToFetch.map(cityInfo => 
+                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${cityInfo.lat}&lon=${cityInfo.lon}&appid=${apiKey}&units=metric&lang=pt_br`)
+                    .then(res => res.ok ? res.json() : Promise.reject(`Erro em ${cityInfo.city}`))
+                    .then(data => ({
+                        city: cityInfo.city,
+                        state: cityInfo.state,
+                        timestamp,
+                        temp: Math.round(data.main.temp),
+                        humidity: data.main.humidity,
+                        wind: Math.round(data.wind.speed * 3.6),
+                        condition: data.weather[0].description
+                    }))
+                    .catch(error => {
+                        console.error(error);
+                        return null; // Retorna nulo em caso de erro para não quebrar o processo
+                    })
+            );
+
+            const results = await Promise.all(promises);
+            const successfulResults = results.filter(r => r !== null);
+
+            populateTable(successfulResults);
+            saveHistory(timestamp, successfulResults);
+            loadHistoryOptions();
+            applyFilters();
+            
+            loadingIndicator.classList.add('hidden');
+            fetchButton.disabled = false;
+        }
+        
+        // --- LÓGICA DE FILTRAGEM ---
+        function populateCityFilter(state) {
+            cityFilter.innerHTML = '<option value="todos">Todos os Municípios</option>';
+            if (state === 'todos') {
+                cityFilter.disabled = true;
+                cityFilter.innerHTML = '<option value="todos">Selecione um estado</option>';
+                return;
+            }
+            cityFilter.disabled = false;
+            const cities = citiesByState[state];
+            const sortedCities = Object.keys(cities).sort((a, b) => a.localeCompare(b));
+            sortedCities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                cityFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const selectedState = stateFilter.value;
+            const selectedCity = cityFilter.value;
+            const rows = tableBody.getElementsByTagName('tr');
+
+            for (const row of rows) {
+                // Pula a linha de "nenhum dado encontrado"
+                if (row.cells.length < 7) continue;
+
+                const rowState = row.cells[1].textContent;
+                const rowCity = row.cells[0].textContent;
+                
+                const stateMatch = selectedState === 'todos' || rowState === selectedState;
+                const cityMatch = selectedCity === 'todos' || rowCity === selectedCity;
+
+                if (stateMatch && cityMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        }
+
+        // --- LÓGICA DE DOWNLOAD ---
+        function downloadCSV() {
+            const table = document.getElementById('weather-table');
+            let csv = [];
+            
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+            csv.push(headers.join(','));
+            
+            table.querySelectorAll('tbody tr').forEach(row => {
+                if (row.style.display !== 'none' && row.cells.length > 1) {
+                    const rowData = Array.from(row.querySelectorAll('td')).map(td => `"${td.textContent.replace(/"/g, '""')}"`);
+                    csv.push(rowData.join(','));
+                }
+            });
+
+            if (csv.length <= 1) {
+                alert("Nenhum dado para baixar. Tente limpar os filtros ou carregar dados primeiro.");
+                return;
+            }
+
+            const csvString = csv.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'dados_meteorologicos.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- LÓGICA DE HISTÓRICO ---
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('weatherHistory')) || [];
+        }
+
+        function saveHistory(timestamp, data) {
+            const history = getHistory();
+            history.unshift({ timestamp, data });
+            if (history.length > 20) { // Limita o histórico aos últimos 20 registros
+                history.pop();
+            }
+            localStorage.setItem('weatherHistory', JSON.stringify(history));
+        }
+
+        function loadHistoryOptions() {
+            const history = getHistory();
+            historySelector.innerHTML = '<option value="">Selecione um registro do histórico</option>';
+            if (history.length === 0) {
+                historySelector.firstElementChild.textContent = 'Nenhum histórico salvo';
+                return;
+            }
+            history.forEach((record, index) => {
+                const date = new Date(record.timestamp);
+                const formattedDate = date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Registro de: ${formattedDate}`;
+                historySelector.appendChild(option);
+            });
+        }
+        
+        // **FUNÇÃO DE CARREGAMENTO OTIMIZADA**
+        function loadDataFromHistory(index) {
+            if (index === "") {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-8">Selecione um registro do histórico para exibir.</td></tr>';
+                return;
+            };
+            const history = getHistory();
+            const record = history[index];
+            if (!record) return;
+            
+            populateTable(record.data);
+            applyFilters();
+        }
+        
+        function clearHistory() {
+            if (confirm('Tem certeza que deseja apagar todo o histórico?')) {
+                localStorage.removeItem('weatherHistory');
+                loadHistoryOptions();
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-8">Histórico limpo.</td></tr>';
+            }
+        }
+        
+        // --- EVENT LISTENERS ---
+        fetchButton.addEventListener('click', fetchAllWeatherData);
+        clearHistoryButton.addEventListener('click', clearHistory);
+        downloadButton.addEventListener('click', downloadCSV);
+        historySelector.addEventListener('change', (e) => loadDataFromHistory(e.target.value));
+        stateFilter.addEventListener('change', () => {
+            populateCityFilter(stateFilter.value);
+            applyFilters();
+        });
+        cityFilter.addEventListener('change', applyFilters);
+
+        window.addEventListener('load', loadHistoryOptions);
+    </script>
+</body>
+</html>

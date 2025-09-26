@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Meteorológico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #198754;
+            --accent-color: #20c997;
+            --dark-color: #198754;
+            --light-color: #ffffff;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .card:hover, .card:focus-within {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .weather-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+        
+        .temperature {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        
+        .highlight-city {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        
+        /* Melhorias de acessibilidade */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: #000;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+            text-decoration: none;
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        .focus-visible:focus {
+            outline: 3px solid #0d6efd;
+            outline-offset: 2px;
+        }
+        
+        .high-contrast {
+            filter: contrast(1.4);
+        }
+        
+        /* Para leitores de tela */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Link de pular navegação para acessibilidade -->
+    <a href="#main-content" class="skip-link focus-visible">Pular para o conteúdo principal</a>
+    
+    <!-- Navbar -->
+    <nav class="navbar bg-white py-4" aria-label="Navegação principal">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <img 
+                        src="/Projeto_Boletim_Censipam/Logos_Censipam/censipam_logo.png" 
+                        alt="Logo CENSIPAM - Centro Gestor e Operacional do Sistema de Proteção da Amazônia" 
+                        class="h-12 w-auto"
+                    >
+                    <h1 class="text-xl font-bold text-gray-800">Portal Meteorológico</h1>
+                </div>
+                
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-primary font-medium hover:text-blue-700 transition focus-visible">Dashboard</a>
+                    <a href="Tabela_todos_Municipios.html" class="text-gray-600 hover:text-gray-900 transition focus-visible">Tabela de Municípios</a>
+                    <a href="Contato.html" class="text-gray-600 hover:text-gray-900 transition focus-visible">Contato</a>
+                    <a href="Sobre.html" class="text-gray-600 hover:text-gray-900 transition focus-visible">Sobre</a>
+                </div>
+                
+                <!-- Controles de acessibilidade -->
+                <div class="flex items-center space-x-2">
+                    <button id="contrast-toggle" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Alternar alto contraste">
+                        <i class="fas fa-adjust"></i>
+                    </button>
+                    <button id="font-increase" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Aumentar tamanho da fonte">
+                        <i class="fas fa-text-height"></i>
+                    </button>
+                    <button id="font-decrease" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Diminuir tamanho da fonte">
+                        <i class="fas fa-text-width"></i>
+                    </button>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-900 focus-visible" aria-expanded="false" aria-controls="mobile-menu">
+                        <i class="fas fa-bars text-xl"></i>
+                        <span class="sr-only">Abrir menu</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2" role="menu">
+                <a href="index.html" class="block py-2 px-4 bg-blue-50 text-primary rounded-md focus-visible" role="menuitem">Dashboard</a>
+                <a href="Tabela_todos_Municipios.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible" role="menuitem">Tabela de Municípios</a>
+                <a href="Contato.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible" role="menuitem">Contato</a>
+                <a href="Sobre.html" class="block py-2 px-4 text-gray-600 hover:bg-gray-100 rounded-md focus-visible" role="menuitem">Sobre</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main id="main-content" class="flex-grow container mx-auto px-4 py-8" role="main">
+        <!-- Cabeçalho com informações atuais -->
+        <section aria-labelledby="current-weather-heading">
+            <div class="mb-8">
+                <h2 id="current-weather-heading" class="text-2xl font-bold text-gray-800 mb-4">Previsão do Tempo - Região Norte</h2>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700">Condições Atuais</h3>
+                            <p class="text-gray-600">Atualizado em: <span id="current-date" aria-live="polite"></span></p>
+                        </div>
+                        <div class="flex items-center mt-4 md:mt-0">
+                            <i class="fas fa-map-marker-alt text-primary mr-2" aria-hidden="true"></i>
+                            <label for="city-selector" class="sr-only">Selecionar cidade</label>
+                            <select id="city-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus-visible">
+                                <option value="PORTO VELHO">Porto Velho</option>
+                                <option value="RIO BRANCO">Rio Branco</option>
+                                <option value="CUIABÁ">Cuiabá</option>
+                                <option value="VILHENA">Vilhena</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Condições atuais -->
+                        <div class="bg-blue-50 rounded-lg p-4 flex items-center" aria-label="Condições atuais do tempo">
+                            <div class="mr-4">
+                                <i class="fas fa-sun weather-icon" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <p class="temperature">28°C</p>
+                                <p class="text-gray-600">Parcialmente nublado</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Detalhes adicionais -->
+                        <div class="bg-white border rounded-lg p-4" aria-label="Detalhes meteorológicos">
+                            <h4 class="font-semibold text-gray-700 mb-2">Detalhes</h4>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Umidade:</span>
+                                    <span class="font-medium">65%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Vento:</span>
+                                    <span class="font-medium">15 km/h NE</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Pressão:</span>
+                                    <span class="font-medium">1013 hPa</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alerta meteorológico -->
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4" role="alert" aria-label="Alerta meteorológico">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2" aria-hidden="true"></i>
+                                <h4 class="font-semibold text-gray-700">Alerta Meteorológico</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">Chuva intensa prevista para a região noroeste nos próximos dias.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Previsão para os próximos dias -->
+        <section aria-labelledby="forecast-heading">
+            <div class="mb-8">
+                <h3 id="forecast-heading" class="text-xl font-bold text-gray-800 mb-4">Previsão para os Próximos Dias</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Dia 1 -->
+                    <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para amanhã">
+                        <div class="bg-primary text-white py-2 text-center">
+                            <p class="font-semibold" id="day-1">Amanhã</p>
+                        </div>
+                        <div class="p-4 text-center">
+                            <i class="fas fa-cloud-sun weather-icon mb-2" aria-hidden="true"></i>
+                            <p class="temperature">30°C</p>
+                            <p class="text-gray-600 mb-2">Máx: 32°C / Mín: 22°C</p>
+                            <div class="flex justify-center space-x-4 text-sm text-gray-600">
+                                <div>
+                                    <i class="fas fa-tint mr-1" aria-hidden="true"></i>
+                                    <span>70%</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-wind mr-1" aria-hidden="true"></i>
+                                    <span>12 km/h</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-gray-700">Chuva isolada à tarde</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Dia 2 -->
+                    <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para depois de amanhã">
+                        <div class="bg-primary text-white py-2 text-center">
+                            <p class="font-semibold" id="day-2">Depois de Amanhã</p>
+                        </div>
+                        <div class="p-4 text-center">
+                            <i class="fas fa-cloud weather-icon mb-2" aria-hidden="true"></i>
+                            <p class="temperature">29°C</p>
+                            <p class="text-gray-600 mb-2">Máx: 31°C / Mín: 21°C</p>
+                            <div class="flex justify-center space-x-4 text-sm text-gray-600">
+                                <div>
+                                    <i class="fas fa-tint mr-1" aria-hidden="true"></i>
+                                    <span>75%</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-wind mr-1" aria-hidden="true"></i>
+                                    <span>10 km/h</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-gray-700">Nublado com possibilidade de chuva</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Dia 3 -->
+                    <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para daqui a 3 dias">
+                        <div class="bg-primary text-white py-2 text-center">
+                            <p class="font-semibold" id="day-3">3 Dias</p>
+                        </div>
+                        <div class="p-4 text-center">
+                            <i class="fas fa-cloud-showers-heavy weather-icon mb-2" aria-hidden="true"></i>
+                            <p class="temperature">27°C</p>
+                            <p class="text-gray-600 mb-2">Máx: 29°C / Mín: 20°C</p>
+                            <div class="flex justify-center space-x-4 text-sm text-gray-600">
+                                <div>
+                                    <i class="fas fa-tint mr-1" aria-hidden="true"></i>
+                                    <span>80%</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-wind mr-1" aria-hidden="true"></i>
+                                    <span>18 km/h</span>
+                                </div>
+                            </div>
+                            <p class="mt-2 text-gray-700">Chuva moderada</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Acesso rápido às tabelas -->
+        <section aria-labelledby="data-access-heading">
+            <div class="mb-8">
+                <h3 id="data-access-heading" class="text-xl font-bold text-gray-800 mb-4">Dados Meteorológicos</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <a href="Tabela_todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Acessar tabela completa de municípios">
+                        <div class="mr-4 text-primary">
+                            <i class="fas fa-table text-3xl" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Tabela Completa de Municípios</h4>
+                            <p class="text-gray-600 mt-1">Acesse dados meteorológicos detalhados para todos os municípios monitorados</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 ml-auto" aria-hidden="true"></i>
+                    </a>
+                    
+                    <a href="Tabela_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Importar ou exportar dados meteorológicos">
+                        <div class="mr-4 text-primary">
+                            <i class="fas fa-file-excel text-3xl" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Importar/Exportar Dados</h4>
+                            <p class="text-gray-600 mt-1">Faça upload de planilhas ou exporte dados para análise</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 ml-auto" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Mapa da região -->
+        <section aria-labelledby="map-heading">
+            <div class="mb-8">
+                <h3 id="map-heading" class="text-xl font-bold text-gray-800 mb-4">Mapa Meteorológico</h3>
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="p-4 border-b">
+                        <div class="flex flex-wrap gap-2" role="tablist" aria-label="Tipos de mapa meteorológico">
+                            <button class="px-3 py-1 bg-primary text-white rounded-md text-sm focus-visible" role="tab" aria-selected="true" aria-controls="temperature-map">Temperatura</button>
+                            <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm focus-visible" role="tab" aria-selected="false" aria-controls="precipitation-map">Precipitação</button>
+                            <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm focus-visible" role="tab" aria-selected="false" aria-controls="wind-map">Vento</button>
+                            <button class="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm focus-visible" role="tab" aria-selected="false" aria-controls="pressure-map">Pressão</button>
+                        </div>
+                    </div>
+                    <div class="p-4 h-64 flex items-center justify-center bg-gray-100" id="temperature-map" role="tabpanel" tabindex="0">
+                        <p class="text-gray-500">Mapa meteorológico interativo será implementado aqui</p>
+                    </div>
+                    <div class="p-4 h-64 flex items-center justify-center bg-gray-100 hidden" id="precipitation-map" role="tabpanel" tabindex="0" aria-hidden="true">
+                        <p class="text-gray-500">Mapa de precipitação será implementado aqui</p>
+                    </div>
+                    <div class="p-4 h-64 flex items-center justify-center bg-gray-100 hidden" id="wind-map" role="tabpanel" tabindex="0" aria-hidden="true">
+                        <p class="text-gray-500">Mapa de vento será implementado aqui</p>
+                    </div>
+                    <div class="p-4 h-64 flex items-center justify-center bg-gray-100 hidden" id="pressure-map" role="tabpanel" tabindex="0" aria-hidden="true">
+                        <p class="text-gray-500">Mapa de pressão será implementado aqui</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer py-8 mt-auto" role="contentinfo">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Portal Meteorológico</h4>
+                    <p class="text-gray-300">Fornecendo informações meteorológicas precisas para a região amazônica.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition focus-visible">Dashboard</a></li>
+                        <li><a href="Tabela_todos_Municipios.html" class="text-gray-300 hover:text-white transition focus-visible">Tabela de Municípios</a></li>
+                        <li><a href="Contato.html" class="text-gray-300 hover:text-white transition focus-visible">Contato</a></li>
+                        <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition focus-visible">Sobre</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contato</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2" aria-hidden="true"></i>
+                            <span>(69) 99264-6823</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2" aria-hidden="true"></i>
+                            <span>contato@Portalmeteorológico</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i>
+                            <span>Antonio Fraga Moreira, 3816</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2025 Portal Meteorológico - Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts de acessibilidade -->
+    <script>
+        // Menu mobile toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            
+            this.setAttribute('aria-expanded', !isExpanded);
+            menu.classList.toggle('hidden');
+            
+            // Alterar ícone do menu
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Atualizar data atual
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', options);
+        
+        // Atualizar dias da previsão
+        const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        
+        for (let i = 1; i <= 3; i++) {
+            const futureDate = new Date();
+            futureDate.setDate(now.getDate() + i);
+            document.getElementById(`day-${i}`).textContent = 
+                `${days[futureDate.getDay()]} (${futureDate.getDate()}/${futureDate.getMonth() + 1})`;
+        }
+        
+        // Simulação de mudança de cidade
+        document.getElementById('city-selector').addEventListener('change', function() {
+            // Em uma implementação real, aqui buscaria os dados da cidade selecionada
+            const selectedCity = this.options[this.selectedIndex].text;
+            alert(`Carregando dados para: ${selectedCity}`);
+        });
+        
+        // Controles de acessibilidade
+        document.getElementById('contrast-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('high-contrast');
+            const isHighContrast = document.body.classList.contains('high-contrast');
+            this.setAttribute('aria-label', isHighContrast ? 'Desativar alto contraste' : 'Ativar alto contraste');
+        });
+        
+        document.getElementById('font-increase').addEventListener('click', function() {
+            const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            document.documentElement.style.fontSize = (currentSize + 1) + 'px';
+        });
+        
+        document.getElementById('font-decrease').addEventListener('click', function() {
+            const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            if (currentSize > 12) {
+                document.documentElement.style.fontSize = (currentSize - 1) + 'px';
+            }
+        });
+        
+        // Tabs do mapa
+        const tabButtons = document.querySelectorAll('[role="tab"]');
+        const tabPanels = document.querySelectorAll('[role="tabpanel"]');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Desativar todas as abas
+                tabButtons.forEach(btn => {
+                    btn.setAttribute('aria-selected', 'false');
+                    btn.classList.remove('bg-primary', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                
+                // Ativar a aba clicada
+                this.setAttribute('aria-selected', 'true');
+                this.classList.remove('bg-gray-200', 'text-gray-700');
+                this.classList.add('bg-primary', 'text-white');
+                
+                // Esconder todos os painéis
+                tabPanels.forEach(panel => {
+                    panel.classList.add('hidden');
+                    panel.setAttribute('aria-hidden', 'true');
+                });
+                
+                // Mostrar o painel correspondente
+                const panelId = this.getAttribute('aria-controls');
+                const activePanel = document.getElementById(panelId);
+                activePanel.classList.remove('hidden');
+                activePanel.setAttribute('aria-hidden', 'false');
+            });
+            
+            // Navegação por teclado nas abas
+            button.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    const currentIndex = Array.from(tabButtons).indexOf(this);
+                    let nextIndex;
+                    
+                    if (e.key === 'ArrowLeft') {
+                        nextIndex = currentIndex > 0 ? currentIndex - 1 : tabButtons.length - 1;
+                    } else {
+                        nextIndex = currentIndex < tabButtons.length - 1 ? currentIndex + 1 : 0;
+                    }
+                    
+                    tabButtons[nextIndex].focus();
+                    tabButtons[nextIndex].click();
+                }
+            });
+        });
+        
+        // Foco visível para elementos interativos
+        document.addEventListener('keyup', function(e) {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+        });
+        
+        document.addEventListener('mousedown', function() {
+            document.body.classList.remove('keyboard-navigation');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Tabela Diária</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; margin: 20px; }
+        table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #b1b1b1; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #54c222; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        button, input { margin: 10px; padding: 10px; font-size: 16px; border-radius: 5px; border: none; }
+        button { background-color: #54c222; color: white; cursor: pointer; }
+        input[type="file"] { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2 class="font-sans text-xl">Tabela Diária de Municípios</h2>
+    <input type="file" id="fileInput" accept=".xlsx,.ods,.csv">
+    <button onclick="downloadExcel()">Baixar Planilha</button>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Município</th>
+                <th>Data</th>
+                <th>Nebulosidade</th>
+                <th>Precipitação</th>
+                <th>TMáx</th>
+                <th>TMín</th>
+                <th>Umidade Máx</th>
+                <th>Umidade Mín</th>
+                <th>Intensidade do Vento</th>
+                <th>Direção</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+       <script>
+    document.getElementById("fileInput").addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            readExcelFile(file);
+        }
+    });
+
+    function readExcelFile(file) {
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = function(event) {
+            const arrayBuffer = reader.result;
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            populateTable(jsonData);
+        };
+    }
+
+    function populateTable(data) {
+        const tableBody = document.querySelector("#dataTable tbody");
+        tableBody.innerHTML = ""; // Limpa a tabela antes de inserir novos dados
+
+        data.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${row["Municípios"] || ''}</td>
+                <td>${row["Data"] || ''}</td>
+                <td>${row["Nebulosidade"] || ''}</td>
+                <td>${row["Precipitação"] || ''}</td>
+                <td>${row["Temperatura Maxima"] || ''}</td>
+                <td>${row["Temperatura Minima"] || ''}</td>
+                <td>${row["Umidade Relativa Maxima"] || ''}</td>
+                <td>${row["Umidade Relativa Minima"] || ''}</td>
+                <td>${row["Intensidade do Vento"] || ''}</td>
+                <td>${row["Variação da Direção"] || ''}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+</script>
+
+</body>
+</html>

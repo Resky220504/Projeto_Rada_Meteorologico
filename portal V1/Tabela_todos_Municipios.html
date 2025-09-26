@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela Diária</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; text-align: center; margin: 20px; }
+        table { width: 90%; margin: 20px auto; border-collapse: collapse; background: #b1b1b1; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #54c222; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        button, input { margin: 10px; padding: 10px; font-size: 16px; border-radius: 5px; border: none; }
+        button { background-color: #54c222; color: rgb(255, 255, 255); cursor: pointer; }
+        input[type="file"] { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2 class="font-sans text-xl">Tabela Diária de Municípios</h2>
+    <input type="file" id="fileInput" accept=".xlsx,.ods,.csv">
+    <button onclick="downloadExcel()">Baixar Planilha</button>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>Município</th>
+                <th>Data</th>
+                <th>Nebulosidade</th>
+                <th>Precipitação</th>
+                <th>TMín</th>
+                <th>TMáx</th>
+                <th>Umidade</th>
+                <th>Intensidade do Vento</th>
+                <th>Direção</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- A tabela será preenchida dinamicamente -->
+        </tbody>
+    </table>
+    <button onclick="downloadExcel()">Baixar Planilha</button>
+    <script>
+        const municipios = [
+            "PORTO VELHO", "ARIQUEMES", "GUAJARÁ", 
+            "JI-PARANÁ", "CACOAL", "VILHENA", "CEREJEIRAS", "TARAUACÁ", "CRUZEIRO DO SUL", 
+            "RIO BRANCO", "BRASILÉIA", "SENA MADUREIRA", 
+            "CUIABÁ"
+        ];
+
+        document.getElementById("fileInput").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                readExcelFile(file);
+            }
+        });
+
+        function readExcelFile(file) {
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onload = function(event) {
+                const arrayBuffer = reader.result;
+                const workbook = XLSX.read(arrayBuffer, { type: "array" });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                populateTable(jsonData);
+            };
+        }
+
+        function formatNumber(value) {
+            if (value === undefined || value === null) return "";
+            const num = Number(value);
+            if (isNaN(num)) return "";
+            if (num === 0) return "";
+            return Number.isInteger(num) ? num.toString() : num.toFixed(1);
+        }
+
+        function formatText(value) {
+            return value === undefined || value === null ? "" : String(value).replace(/[^a-zA-Z-]/g, ""); // Remove caracteres indesejados como "c"
+        }
+
+        function populateTable(jsonData) {
+            const tableBody = document.querySelector("#dataTable tbody");
+            tableBody.innerHTML = "";
+
+            let rowIndex = 0; // Índice para percorrer as linhas da planilha
+
+            municipios.forEach(municipio => {
+                let firstRow = true;
+
+                for (let i = 1; i <= 3; i++) { // 3 dias por município
+                    const rowData = jsonData[rowIndex] || {}; // Pega a linha correspondente da planilha
+                    let data = new Date();
+                    data.setDate(data.getDate() + i);
+                    const dataFormatada = data.toLocaleDateString("pt-BR");
+
+                    const tr = document.createElement("tr");
+
+                    if (firstRow) {
+                        const municipioCell = document.createElement("td");
+                        municipioCell.textContent = municipio;
+                        municipioCell.rowSpan = 3;
+                        municipioCell.style.verticalAlign = "middle";
+                        tr.appendChild(municipioCell);
+                        firstRow = false;
+                    }
+
+                    const umidadeMin = formatNumber(rowData["Umidade Relativa Minima"]);
+                    const umidadeMax = formatNumber(rowData["Umidade Relativa Maxima"]);
+                    const umidadeFormatada = umidadeMin || umidadeMax ? `${umidadeMin}/${umidadeMax}` : "";
+                    tr.innerHTML += `
+                        <td>${dataFormatada}</td>
+                        <td>${formatText(rowData["Nebulosidade"])}</td>
+                        <td>${formatText(rowData["Precipitação"])}</td>
+                        <td>${formatNumber(rowData["Temperatura Minima"])}</td>
+                        <td>${formatNumber(rowData["Temperatura Maxima"])}</td>
+                        <td>${umidadeFormatada}</td>
+                        <td>${formatText(rowData["Intensidade do Vento"])}</td>
+                        <td>${formatText(rowData["Variação da Direção"])}</td>
+                    `;
+                    tableBody.appendChild(tr);
+
+                    rowIndex++; // Avança para a próxima linha da planilha
+                }
+            });
+        }
+
+        function downloadExcel() {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(document.getElementById("dataTable"));
+            XLSX.utils.book_append_sheet(wb, ws, "Dados");
+            const hoje = new Date();
+            const dataNome = hoje.toLocaleDateString("pt-BR").replace(/\//g, "").slice(0, 8);
+            XLSX.writeFile(wb, `${dataNome}.xlsx`);
+        }
+
+        function generateTable() {
+            const tableBody = document.querySelector("#dataTable tbody");
+            tableBody.innerHTML = "";
+
+            municipios.forEach(municipio => {
+                let firstRow = true;
+                for (let i = 1; i <= 3; i++) {
+                    let data = new Date();
+                    data.setDate(data.getDate() + i);
+                    let dataFormatada = data.toLocaleDateString("pt-BR");
+
+                    const row = document.createElement("tr");
+                    if (firstRow) {
+                        const municipioCell = document.createElement("td");
+                        municipioCell.textContent = municipio;
+                        municipioCell.rowSpan = 3;
+                        municipioCell.style.verticalAlign = "middle";
+                        row.appendChild(municipioCell);
+                        firstRow = false;
+                    }
+
+                    row.innerHTML += `
+                        <td>${dataFormatada}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            });
+        }
+
+        generateTable();
+    </script>
+</body>
+</html>
