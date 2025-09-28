@@ -103,8 +103,6 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-    <!--<a href="#main-content" class="skip-link focus-visible">Pular para o conteúdo principal</a>-->
-    
     <nav class="navbar py-4" aria-label="Navegação principal">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
@@ -438,7 +436,16 @@
                 dailyForecasts[date].conditions.push(item.weather[0].description);
             }
 
-            const today = new Date().toISOString().slice(0, 10);
+            // =================== INÍCIO DA CORREÇÃO ===================
+            // Constrói a data "de hoje" com base no fuso horário local do usuário, 
+            // em vez de usar o padrão UTC que causava o erro.
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0'); // getMonth() é baseado em zero (0-11)
+            const day = String(now.getDate()).padStart(2, '0');
+            const today = `${year}-${month}-${day}`;
+            // =================== FIM DA CORREÇÃO ===================
+
             delete dailyForecasts[today];
 
             const forecastDays = Object.keys(dailyForecasts).slice(0, 3); 
