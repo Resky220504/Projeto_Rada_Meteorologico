@@ -20,86 +20,100 @@
             --dark-color: #198754;
             --light-color: #ffffff;
         }
-        
+        html {
+            font-size: 16px;
+            transition: font-size 0.2s;
+        }
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f5f7fa;
             color: #333;
             line-height: 1.6;
         }
-        
         .card {
             transition: transform 0.3s, box-shadow 0.3s;
             border-radius: 10px;
             overflow: hidden;
         }
-        
         .card:hover, .card:focus-within {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-        
         .temperature {
             font-size: 2rem;
             font-weight: 600;
         }
-        
         .navbar {
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             background-color: var(--dark-color);
         }
-        
         .footer {
             background-color: var(--dark-color);
             color: white;
         }
-        
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 6px;
-            background: #000;
-            color: white;
-            padding: 8px;
-            z-index: 1000;
-            text-decoration: none;
-            border-radius: 0 0 4px 4px;
-        }
-        
-        .skip-link:focus {
-            top: 0;
-        }
-        
-        .focus-visible:focus {
-            outline: 3px solid var(--primary-color);
-            outline-offset: 2px;
-        }
-        
-        .high-contrast {
-            filter: contrast(1.4);
-        }
-        
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
         #map {
             height: 500px;
             width: 100%;
             z-index: 10;
         }
-        .bg-primary { background-color: var(--primary-color); }
-        .text-primary { color: var(--primary-color); }
-        .bg-secondary { background-color: var(--secondary-color); }
-        .text-secondary { color: var(--secondary-color); }
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            min-width: 200px; 
+        }
+        .leaflet-popup-content {
+            margin: 10px;
+            font-size: 14px;
+        }
+        .state-filter-cb {
+            accent-color: var(--primary-color);
+        }
+        
+        .high-contrast,
+        .high-contrast body {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+        .high-contrast .bg-white,
+        .high-contrast .bg-gray-100,
+        .high-contrast .bg-green-50,
+        .high-contrast .modal-content {
+            background-color: #000 !important;
+        }
+        .high-contrast [class*="text-gray-"],
+        .high-contrast [class*="text-green-"],
+        .high-contrast h1, .high-contrast h2, .high-contrast h3, .high-contrast h4, .high-contrast p, .high-contrast span, .high-contrast label {
+            color: #fff !important;
+        }
+        .high-contrast .card,
+        .high-contrast .rounded-lg,
+        .high-contrast select,
+        .high-contrast button:not([class*="bg-"]),
+        .high-contrast input[type="checkbox"] {
+            border: 1px solid #fff !important;
+        }
+        .high-contrast .shadow,
+        .high-contrast .shadow-lg {
+            box-shadow: none !important;
+        }
+        .high-contrast img {
+            filter: invert(1) brightness(1.5);
+        }
+        .high-contrast .leaflet-tile {
+             filter: invert(1) contrast(0.8) hue-rotate(180deg);
+        }
+
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 10% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 500px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close {
+            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -107,46 +121,31 @@
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img 
-                        src="/Logo/radar_meteorológico.png" 
-                        alt="Portal Meteorológico" 
-                        class="h-12 w-auto"
-                    >
+                    <img src="/Logo/radar_meteorológico.png" alt="Portal Meteorológico" class="h-12 w-auto">
                     <h1 class="text-xl font-bold text-white">Radar Meteorológico</h1>
                 </div>
-                
                 <div class="hidden md:flex space-x-6">
-                    <a href="index.html" class="text-gray-200 font-medium hover:text-white transition focus-visible">Dashboard</a>
-                    <a href="Tabela_Todos_Municipios.html" class="text-gray-200 hover:text-white transition focus-visible">Tabela de Municípios</a>
-                    <a href="Contato.html" class="text-gray-200 hover:text-white transition focus-visible">Contato</a>
-                    <a href="Sobre.html" class="text-gray-200 hover:text-white transition focus-visible">Sobre</a>
+                    <a href="index.html" class="text-gray-200 font-medium hover:text-white transition">Dashboard</a>
+                    <a href="Tabela_Todos_Municipios.html" class="text-gray-200 hover:text-white transition">Tabela de Municípios</a>
+                    <a href="Contato.html" class="text-gray-200 hover:text-white transition">Contato</a>
+                    <a href="Sobre.html" class="text-gray-200 hover:text-white transition">Sobre</a>
                 </div>
-                
                 <div class="hidden sm:flex items-center space-x-2">
-                    <button id="contrast-toggle" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Alternar alto contraste">
-                        <i class="fas fa-adjust"></i>
-                    </button>
-                    <button id="font-increase" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Aumentar tamanho da fonte">
-                        <i class="fas fa-text-height"></i>
-                    </button>
-                    <button id="font-decrease" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Diminuir tamanho da fonte">
-                        <i class="fas fa-text-width"></i>
-                    </button>
+                    <button id="contrast-toggle" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" aria-label="Alternar alto contraste"><i class="fas fa-adjust"></i></button>
+                    <button id="font-increase" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" aria-label="Aumentar tamanho da fonte"><i class="fas fa-text-height"></i></button>
+                    <button id="font-decrease" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" aria-label="Diminuir tamanho da fonte"><i class="fas fa-text-width"></i></button>
                 </div>
-                
                 <div class="md:hidden">
-                    <button id="mobile-menu-button" class="text-gray-200 hover:text-white focus-visible" aria-expanded="false" aria-controls="mobile-menu">
-                        <i class="fas fa-bars text-xl"></i>
-                        <span class="sr-only">Abrir menu</span>
+                    <button id="mobile-menu-button" class="text-gray-200 hover:text-white" aria-expanded="false" aria-controls="mobile-menu">
+                        <i class="fas fa-bars text-xl"></i><span class="sr-only">Abrir menu</span>
                     </button>
                 </div>
             </div>
-            
             <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2" role="menu">
-                <a href="index.html" class="block py-2 px-4 bg-green-100 text-green-800 font-medium rounded-md focus-visible" role="menuitem">Dashboard</a>
-                <a href="Tabela_Todos_Municipios.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Tabela de Municípios</a>
-                <a href="Contato.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Contato</a>
-                <a href="Sobre.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Sobre</a>
+                <a href="index.html" class="block py-2 px-4 bg-green-100 text-green-800 font-medium rounded-md" role="menuitem">Dashboard</a>
+                <a href="Tabela_Todos_Municipios.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md" role="menuitem">Tabela de Municípios</a>
+                <a href="Contato.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md" role="menuitem">Contato</a>
+                <a href="Sobre.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md" role="menuitem">Sobre</a>
             </div>
         </div>
     </nav>
@@ -163,23 +162,21 @@
                         </div>
                         <div class="flex flex-wrap items-center justify-start md:justify-end gap-4 w-full md:w-auto">
                             <div class="flex items-center">
-                                <i class="fas fa-globe-americas text-primary mr-2" aria-hidden="true"></i>
+                                <i class="fas fa-globe-americas text-green-600 mr-2" aria-hidden="true"></i>
                                 <label for="state-selector" class="sr-only">Selecionar Estado</label>
-                                <select id="state-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus-visible">
+                                <select id="state-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
                                     <option value="RO">Rondônia</option>
                                     <option value="AC">Acre</option>
                                     <option value="MT">Mato Grosso</option>
                                 </select>
                             </div>
                             <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt text-primary mr-2" aria-hidden="true"></i>
+                                <i class="fas fa-map-marker-alt text-green-600 mr-2" aria-hidden="true"></i>
                                 <label for="city-selector" class="sr-only">Selecionar Município</label>
-                                <select id="city-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus-visible">
-                                </select>
+                                <select id="city-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"></select>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div class="bg-green-50 rounded-lg p-4 flex items-center md:col-span-1 lg:col-span-1" aria-label="Condições atuais do tempo">
                             <div class="w-20 h-20 flex-shrink-0 flex items-center justify-center">
@@ -190,25 +187,14 @@
                                 <p id="current-condition" class="text-gray-600 capitalize">Carregando...</p>
                             </div>
                         </div>
-                        
                         <div class="bg-white border rounded-lg p-4 md:col-span-1 lg:col-span-1" aria-label="Detalhes meteorológicos">
                             <h4 class="font-semibold text-gray-700 mb-2">Detalhes</h4>
                             <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Umidade:</span>
-                                    <span id="current-humidity" class="font-medium">--%</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Vento:</span>
-                                    <span id="current-wind" class="font-medium">-- km/h</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Pressão:</span>
-                                    <span id="current-pressure" class="font-medium">---- hPa</span>
-                                </div>
+                                <div class="flex justify-between"><span class="text-gray-600">Umidade:</span><span id="current-humidity" class="font-medium">--%</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Vento:</span><span id="current-wind" class="font-medium">-- km/h</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Pressão:</span><span id="current-pressure" class="font-medium">---- hPa</span></div>
                             </div>
                         </div>
-                        
                         <div id="weather-alert" class="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4 hidden md:col-span-2 lg:col-span-1" role="alert" aria-label="Alerta meteorológico">
                             <div class="flex items-center">
                                 <i class="fas fa-exclamation-triangle text-yellow-700 mr-2" aria-hidden="true"></i>
@@ -220,42 +206,39 @@
                 </div>
             </div>
         </section>
-        
         <section aria-labelledby="forecast-heading">
             <div class="mb-8">
                 <h3 id="forecast-heading" class="text-xl font-bold text-gray-800 mb-4">Previsão para os Próximos Dias</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para o primeiro dia">
-                        <div class="bg-secondary text-white py-2 text-center">
-                            <p class="font-semibold" id="day-1-date">--/--</p>
+                        <div class="bg-green-600 text-white py-2 px-2 text-center">
+                            <p class="font-semibold capitalize" id="day-1-weekday">--</p>
+                            <p class="text-sm" id="day-1-date">--/--</p>
                         </div>
                         <div class="p-4 text-center">
                             <img id="day-1-icon" src="" alt="Ícone da previsão" class="w-20 h-20 mx-auto mb-2">
-                            <p id="day-1-temp" class="temperature">--°C</p>
                             <p class="text-gray-600 mb-2">Máx: <span id="day-1-max">--</span>°C / Mín: <span id="day-1-min">--</span>°C</p>
                             <p id="day-1-condition" class="mt-2 text-gray-700 capitalize">Carregando...</p>
                         </div>
                     </div>
-                    
                     <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para o segundo dia">
-                        <div class="bg-secondary text-white py-2 text-center">
-                            <p class="font-semibold" id="day-2-date">--/--</p>
+                        <div class="bg-green-600 text-white py-2 px-2 text-center">
+                            <p class="font-semibold capitalize" id="day-2-weekday">--</p>
+                            <p class="text-sm" id="day-2-date">--/--</p>
                         </div>
                         <div class="p-4 text-center">
-                             <img id="day-2-icon" src="" alt="Ícone da previsão" class="w-20 h-20 mx-auto mb-2">
-                            <p id="day-2-temp" class="temperature">--°C</p>
+                            <img id="day-2-icon" src="" alt="Ícone da previsão" class="w-20 h-20 mx-auto mb-2">
                             <p class="text-gray-600 mb-2">Máx: <span id="day-2-max">--</span>°C / Mín: <span id="day-2-min">--</span>°C</p>
                             <p id="day-2-condition" class="mt-2 text-gray-700 capitalize">Carregando...</p>
                         </div>
                     </div>
-                    
                     <div class="card bg-white rounded-lg shadow overflow-hidden" role="article" aria-label="Previsão para o terceiro dia">
-                        <div class="bg-secondary text-white py-2 text-center">
-                            <p class="font-semibold" id="day-3-date">--/--</p>
+                        <div class="bg-green-600 text-white py-2 px-2 text-center">
+                            <p class="font-semibold capitalize" id="day-3-weekday">--</p>
+                            <p class="text-sm" id="day-3-date">--/--</p>
                         </div>
                         <div class="p-4 text-center">
-                             <img id="day-3-icon" src="" alt="Ícone da previsão" class="w-20 h-20 mx-auto mb-2">
-                            <p id="day-3-temp" class="temperature">--°C</p>
+                            <img id="day-3-icon" src="" alt="Ícone da previsão" class="w-20 h-20 mx-auto mb-2">
                             <p class="text-gray-600 mb-2">Máx: <span id="day-3-max">--</span>°C / Mín: <span id="day-3-min">--</span>°C</p>
                             <p id="day-3-condition" class="mt-2 text-gray-700 capitalize">Carregando...</p>
                         </div>
@@ -263,45 +246,73 @@
                 </div>
             </div>
         </section>
-        
         <section aria-labelledby="data-access-heading">
             <div class="mb-8">
                 <h3 id="data-access-heading" class="text-xl font-bold text-gray-800 mb-4">Dados Meteorológicos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <a href="Tabela_Todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Acessar tabela completa de municípios">
-                        <div class="mr-4 text-primary">
-                            <i class="fas fa-table text-3xl" aria-hidden="true"></i>
-                        </div>
+                    <a href="Tabela_Todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline" aria-label="Acessar tabela completa de municípios">
+                        <div class="mr-4 text-green-600"><i class="fas fa-table text-3xl" aria-hidden="true"></i></div>
                         <div>
                             <h4 class="font-semibold text-gray-800">Tabela Completa de Municípios</h4>
-                            <p class="text-gray-600 mt-1">Acesse dados meteorológicos detalhados para todos os municípios monitorados</p>
+                            <p class="text-gray-600 mt-1">Acesse dados meteorológicos detalhados</p>
                         </div>
                         <i class="fas fa-chevron-right text-gray-400 ml-auto" aria-hidden="true"></i>
                     </a>
-                    
-                    <a href="#" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Importar ou exportar dados meteorológicos">
-                        <div class="mr-4 text-primary">
-                            <i class="fas fa-file-excel text-3xl" aria-hidden="true"></i>
-                        </div>
+                    <button id="import-button" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline cursor-pointer" aria-label="Importar dados meteorológicos">
+                        <div class="mr-4 text-green-600"><i class="fas fa-file-excel text-3xl" aria-hidden="true"></i></div>
                         <div>
-                            <h4 class="font-semibold text-gray-800">Importar/Exportar Dados</h4>
-                            <p class="text-gray-600 mt-1">Faça upload de planilhas ou exporte dados para análise</p>
+                            <h4 class="font-semibold text-gray-800">Importar Dados</h4>
+                            <p class="text-gray-600 mt-1">Faça upload de planilhas de dados</p>
                         </div>
                         <i class="fas fa-chevron-right text-gray-400 ml-auto" aria-hidden="true"></i>
-                    </a>
+                    </button>
                 </div>
             </div>
         </section>
-        
         <section aria-labelledby="map-heading">
             <div class="mb-8">
                 <h3 id="map-heading" class="text-xl font-bold text-gray-800 mb-4">Mapa Meteorológico</h3>
-                <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="bg-gray-100 p-3 rounded-t-lg flex items-center justify-center gap-x-4 gap-y-2 flex-wrap">
+                    <span class="font-semibold text-sm text-gray-700">Exibir no mapa:</span>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" class="state-filter-cb h-4 w-4 rounded" value="RO" checked> 
+                        <span>Rondônia</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" class="state-filter-cb h-4 w-4 rounded" value="AC" checked> 
+                        <span>Acre</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                        <input type="checkbox" class="state-filter-cb h-4 w-4 rounded" value="MT" checked> 
+                        <span>Mato Grosso</span>
+                    </label>
+                </div>
+                <div class="bg-white rounded-b-lg shadow overflow-hidden">
                     <div id="map"></div>
                 </div>
             </div>
         </section>
     </main>
+
+    <div id="import-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Importar Dados Meteorológicos</h2>
+            <p class="mb-4">Esta funcionalidade permite importar dados de arquivos Excel (.xlsx, .xls) ou CSV.</p>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4">
+                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                <p class="text-gray-600">Arraste e solte seu arquivo aqui ou</p>
+                <label for="file-input" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded-md cursor-pointer hover:bg-green-700 transition">
+                    <i class="fas fa-folder-open mr-2"></i>Selecionar Arquivo
+                </label>
+                <input id="file-input" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="cancel-import" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition">Cancelar</button>
+                <button id="confirm-import" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Importar</button>
+            </div>
+        </div>
+    </div>
 
     <footer class="footer py-8 mt-auto" role="contentinfo">
         <div class="container mx-auto px-4">
@@ -310,36 +321,24 @@
                     <h4 class="text-lg font-semibold mb-4">Portal Meteorológico</h4>
                     <p class="text-gray-300">Fornecendo informações meteorológicas precisas para a região amazônica.</p>
                 </div>
-                
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
                     <ul class="space-y-2">
-                        <li><a href="index.html" class="text-gray-300 hover:text-white transition focus-visible">Dashboard</a></li>
-                        <li><a href="Tabela_Todos_Municipios.html" class="text-gray-300 hover:text-white transition focus-visible">Tabela de Municípios</a></li>
-                        <li><a href="Contato.html" class="text-gray-300 hover:text-white transition focus-visible">Contato</a></li>
-                        <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition focus-visible">Sobre</a></li>
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition">Dashboard</a></li>
+                        <li><a href="Tabela_Todos_Municipios.html" class="text-gray-300 hover:text-white transition">Tabela de Municípios</a></li>
+                        <li><a href="Contato.html" class="text-gray-300 hover:text-white transition">Contato</a></li>
+                        <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition">Sobre</a></li>
                     </ul>
                 </div>
-                
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Contato</h4>
                     <ul class="space-y-2 text-gray-300">
-                        <li class="flex items-center">
-                            <i class="fas fa-phone mr-2" aria-hidden="true"></i>
-                            <span>(69) 99264-6823</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-envelope mr-2" aria-hidden="true"></i>
-                            <span>contato@Portalmeteorológico</span>
-                        </li>
-                        <li class="flex items-center">
-                            <i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i>
-                            <span>Antonio Fraga Moreira, 3816</span>
-                        </li>
+                        <li class="flex items-center"><i class="fas fa-phone mr-2" aria-hidden="true"></i><span>(69) 99264-6823</span></li>
+                        <li class="flex items-center"><i class="fas fa-envelope mr-2" aria-hidden="true"></i><span>contato@Portalmeteorológico</span></li>
+                        <li class="flex items-center"><i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i><span>Antonio Fraga Moreira, 3816</span></li>
                     </ul>
                 </div>
             </div>
-            
             <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
                 <p>&copy; 2025 Portal Meteorológico - Todos os direitos reservados.</p>
             </div>
@@ -353,239 +352,214 @@
     <script>
         const apiKey = '3a8483478c92616b740ea1e354c8a8e9'; 
 
-        const citiesByState = {
-            'RO': { 'Alta Floresta D\'Oeste': { lat: -11.9283, lon: -61.9961 }, 'Alto Alegre dos Parecis': { lat: -12.128, lon: -61.821 }, 'Alto Paraíso': { lat: -9.71667, lon: -63.3169 }, 'Alvorada D\'Oeste': { lat: -11.3458, lon: -62.355 }, 'Ariquemes': { lat: -9.9133, lon: -63.0408 }, 'Buritis': { lat: -10.2033, lon: -63.8292 }, 'Cabixi': { lat: -13.4936, lon: -60.5511 }, 'Cacaulândia': { lat: -10.3478, lon: -62.8931 }, 'Cacoal': { lat: -11.4386, lon: -61.4478 }, 'Campo Novo de Rondônia': { lat: -10.5708, lon: -63.6192 }, 'Candeias do Jamari': { lat: -8.79056, lon: -63.7025 }, 'Castanheiras': { lat: -11.4178, lon: -61.9483 }, 'Cerejeiras': { lat: -13.1894, lon: -60.8161 }, 'Chupinguaia': { lat: -12.5492, lon: -60.8994 }, 'Colorado do Oeste': { lat: -13.1331, lon: -60.5503 }, 'Corumbiara': { lat: -12.9864, lon: -60.9419 }, 'Costa Marques': { lat: -12.4419, lon: -64.2294 }, 'Cujubim': { lat: -9.37028, lon: -62.5975 }, 'Espigão D\'Oeste': { lat: -11.525, lon: -61.0208 }, 'Governador Jorge Teixeira': { lat: -10.8631, lon: -62.7761 }, 'Guajará-Mirim': { lat: -10.7828, lon: -65.3361 }, 'Itapuã do Oeste': { lat: -9.28056, lon: -63.155 }, 'Jaru': { lat: -10.4389, lon: -62.4664 }, 'Ji-Paraná': { lat: -10.885, lon: -61.945 }, 'Machadinho D\'Oeste': { lat: -9.43194, lon: -61.98 }, 'Ministro Andreazza': { lat: -11.1969, lon: -61.5161 }, 'Mirante da Serra': { lat: -11.1736, lon: -62.6719 }, 'Monte Negro': { lat: -10.2933, lon: -63.3236 }, 'Nova Brasilândia D\'Oeste': { lat: -11.7108, lon: -62.3397 }, 'Nova Mamoré': { lat: -10.4072, lon: -65.3217 }, 'Nova União': { lat: -11.0503, lon: -62.5694 }, 'Novo Horizonte do Oeste': { lat: -11.7056, lon: -62.0017 }, 'Ouro Preto do Oeste': { lat: -10.7481, lon: -62.2158 }, 'Parecis': { lat: -12.21, lon: -61.5958 }, 'Pimenta Bueno': { lat: -11.6725, lon: -61.1925 }, 'Pimenteiras do Oeste': { lat: -13.4739, lon: -61.0458 }, 'Porto Velho': { lat: -8.7619, lon: -63.9039 }, 'Presidente Médici': { lat: -11.175, lon: -61.9014 }, 'Primavera de Rondônia': { lat: -11.8153, lon: -61.3208 }, 'Rio Crespo': { lat: -9.73333, lon: -62.9094 }, 'Rolim de Moura': { lat: -11.7258, lon: -61.7772 }, 'Santa Luzia D\'Oeste': { lat: -11.9139, lon: -61.7825 }, 'São Felipe D\'Oeste': { lat: -11.9011, lon: -61.4722 }, 'São Francisco do Guaporé': { lat: -12.0622, lon: -63.5756 }, 'São Miguel do Guaporé': { lat: -11.6917, lon: -62.7092 }, 'Seringueiras': { lat: -11.7333, lon: -63.0239 }, 'Teixeirópolis': { lat: -10.9667, lon: -62.2536 }, 'Theobroma': { lat: -10.2333, lon: -62.3417 }, 'Urupá': { lat: -11.135, lon: -62.365 }, 'Vale do Anari': { lat: -9.88333, lon: -62.15 }, 'Vale do Paraíso': { lat: -10.4286, lon: -62.1389 }, 'Vilhena': { lat: -12.7406, lon: -60.1458 } },
-            'AC': { 'Acrelândia': { lat: -9.82778, lon: -66.8975 }, 'Assis Brasil': { lat: -10.9411, lon: -69.5703 }, 'Brasiléia': { lat: -11.0119, lon: -68.7481 }, 'Bujari': { lat: -9.83222, lon: -67.9511 }, 'Capixaba': { lat: -10.5739, lon: -67.6833 }, 'Cruzeiro do Sul': { lat: -7.6297, lon: -72.6708 }, 'Epitaciolândia': { lat: -11.0194, lon: -68.7369 }, 'Feijó': { lat: -8.16389, lon: -70.3536 }, 'Jordão': { lat: -9.43278, lon: -71.8883 }, 'Mâncio Lima': { lat: -7.61417, lon: -72.8958 }, 'Manoel Urbano': { lat: -8.83889, lon: -69.2597 }, 'Marechal Thaumaturgo': { lat: -8.93972, lon: -72.7381 }, 'Plácido de Castro': { lat: -10.3344, lon: -67.1856 }, 'Porto Acre': { lat: -9.58722, lon: -67.5333 }, 'Porto Walter': { lat: -8.26861, lon: -72.7439 }, 'Rio Branco': { lat: -9.974, lon: -67.81 }, 'Rodrigues Alves': { lat: -7.74028, lon: -72.6481 }, 'Santa Rosa do Purus': { lat: -9.43833, lon: -70.4939 }, 'Sena Madureira': { lat: -9.0667, lon: -68.6569 }, 'Senador Guiomard': { lat: -10.1503, lon: -67.5367 }, 'Taruacá': { lat: -8.1614, lon: -70.7661 }, 'Xapuri': { lat: -10.6519, lon: -68.5042 } },
-            'MT': { 'Acorizal': { lat: -15.1953, lon: -56.3683 }, 'Água Boa': { lat: -14.3475, lon: -52.1558 }, 'Alta Floresta': { lat: -9.87556, lon: -56.0861 }, 'Alto Araguaia': { lat: -17.3147, lon: -53.2153 }, 'Alto Boa Vista': { lat: -11.6742, lon: -51.385 }, 'Alto Garças': { lat: -16.945, lon: -53.6289 }, 'Alto Paraguai': { lat: -14.5153, lon: -56.48 }, 'Alto Taquari': { lat: -17.8258, lon: -53.2825 }, 'Apiacás': { lat: -9.54167, lon: -57.4514 }, 'Araguaiana': { lat: -15.7278, lon: -51.8294 }, 'Araguainha': { lat: -16.855, lon: -53.0319 }, 'Araputanga': { lat: -15.4678, lon: -58.3497 }, 'Arenápolis': { lat: -14.4519, lon: -56.8458 }, 'Aripuanã': { lat: -10.165, lon: -59.4569 }, 'Barão de Melgaço': { lat: -16.195, lon: -55.9675 }, 'Barra do Bugres': { lat: -15.0747, lon: -57.1811 }, 'Barra do Garças': { lat: -15.8903, lon: -52.2567 }, 'Bom Jesus do Araguaia': { lat: -12.1833, lon: -51.35 }, 'Brasnorte': { lat: -12.1539, lon: -57.9786 }, 'Cáceres': { lat: -16.0708, lon: -57.6792 }, 'Campinápolis': { lat: -14.5028, lon: -52.8875 }, 'Campo Novo do Parecis': { lat: -13.6769, lon: -57.8889 }, 'Campo Verde': { lat: -15.545, lon: -55.1683 }, 'Campos de Júlio': { lat: -13.5244, lon: -59.0883 }, 'Canabrava do Norte': { lat: -11.0181, lon: -51.8317 }, 'Canarana': { lat: -13.5539, lon: -52.2706 }, 'Carlinda': { lat: -9.95, lon: -55.85 }, 'Castanheira': { lat: -11.1072, lon: -58.6017 }, 'Chapada dos Guimarães': { lat: -15.4606, lon: -55.7497 }, 'Cláudia': { lat: -11.5167, lon: -55.2 }, 'Cocalinho': { lat: -14.3853, lon: -51.0114 }, 'Colíder': { lat: -10.8189, lon: -55.4561 }, 'Colniza': { lat: -9.48889, lon: -59.215 }, 'Comodoro': { lat: -13.6639, lon: -59.785 }, 'Confresa': { lat: -10.6433, lon: -51.5694 }, 'Conquista D\'Oeste': { lat: -14.5511, lon: -59.5786 }, 'Cotriguaçu': { lat: -9.84917, lon: -58.2439 }, 'Cuiabá': { lat: -15.5989, lon: -56.0949 }, 'Curvelândia': { lat: -15.6186, lon: -57.9422 }, 'Denise': { lat: -14.7381, lon: -57.0531 }, 'Diamantino': { lat: -14.4086, lon: -56.4458 }, 'Dom Aquino': { lat: -15.8075, lon: -54.9189 }, 'Feliz Natal': { lat: -12.3917, lon: -54.9192 }, 'Figueirópolis D\'Oeste': { lat: -15.4419, lon: -58.7306 }, 'Gaúcha do Norte': { lat: -13.2425, lon: -53.0789 }, 'General Carneiro': { lat: -15.7083, lon: -52.7567 }, 'Glória D\'Oeste': { lat: -15.7558, lon: -58.3061 }, 'Guarantã do Norte': { lat: -9.78694, lon: -54.8889 }, 'Guiratinga': { lat: -16.3475, lon: -53.7611 }, 'Indiavaí': { lat: -15.4953, lon: -58.5539 }, 'Ipiranga do Norte': { lat: -12.3561, lon: -56.065 }, 'Itanhangá': { lat: -12.1625, lon: -56.6669 }, 'Itaúba': { lat: -11.05, lon: -55.2833 }, 'Itiquira': { lat: -17.21, lon: -54.1458 }, 'Jaciara': { lat: -15.9653, lon: -54.9683 }, 'Jangada': { lat: -15.2392, lon: -56.4908 }, 'Jauru': { lat: -15.3403, lon: -58.8781 }, 'Juara': { lat: -11.2539, lon: -57.5186 }, 'Juína': { lat: -11.3819, lon: -58.7383 }, 'Juruena': { lat: -10.3239, lon: -58.3619 }, 'Juscimeira': { lat: -16.0506, lon: -54.8856 }, 'Lambari D\'Oeste': { lat: -15.3283, lon: -58.0169 }, 'Lucas do Rio Verde': { lat: -13.05, lon: -55.9167 }, 'Luciara': { lat: -10.7583, lon: -50.5694 }, 'Marcelândia': { lat: -11.05, lon: -54.4333 }, 'Matupá': { lat: -10.1711, lon: -54.935 }, 'Mirassol d\'Oeste': { lat: -15.6744, lon: -58.0861 }, 'Nobres': { lat: -14.7208, lon: -56.3289 }, 'Nortelândia': { lat: -14.4547, lon: -56.8033 }, 'Nossa Senhora do Livramento': { lat: -15.765, lon: -56.3458 }, 'Nova Bandeirantes': { lat: -9.84583, lon: -57.8011 }, 'Nova Brasilândia': { lat: -14.9569, lon: -54.965 }, 'Nova Canaã do Norte': { lat: -10.6833, lon: -55.7167 }, 'Nova Guarita': { lat: -10.3333, lon: -55.4333 }, 'Nova Lacerda': { lat: -14.4681, lon: -59.6067 }, 'Nova Marilândia': { lat: -14.2889, lon: -56.9733 }, 'Nova Maringá': { lat: -13.0044, lon: -57.0603 }, 'Nova Monte Verde': { lat: -9.96667, lon: -57.5333 }, 'Nova Mutum': { lat: -13.84, lon: -56.0744 }, 'Nova Nazaré': { lat: -14.7333, lon: -51.8167 }, 'Nova Olímpia': { lat: -14.7961, lon: -57.2881 }, 'Nova Santa Helena': { lat: -10.8833, lon: -55.0833 }, 'Nova Ubiratã': { lat: -12.9833, lon: -55.25 }, 'Nova Xavantina': { lat: -14.6739, lon: -52.3514 }, 'Novo Horizonte do Norte': { lat: -11.4167, lon: -57.35 }, 'Novo Mundo': { lat: -9.9, lon: -55.1833 }, 'Novo Santo Antônio': { lat: -12.5833, lon: -51.25 }, 'Novo São Joaquim': { lat: -14.9069, lon: -53.0189 }, 'Paranaíta': { lat: -9.66667, lon: -56.4833 }, 'Paranatinga': { lat: -14.4289, lon: -54.0506 }, 'Pedra Preta': { lat: -16.6261, lon: -54.4758 }, 'Peixoto de Azevedo': { lat: -10.2228, lon: -54.9781 }, 'Planalto da Serra': { lat: -14.6667, lon: -55.15 }, 'Poconé': { lat: -16.2569, lon: -56.6225 }, 'Pontal do Araguaia': { lat: -15.8953, lon: -52.0114 }, 'Ponte Branca': { lat: -16.7619, lon: -52.8317 }, 'Pontes e Lacerda': { lat: -15.2261, lon: -59.3353 }, 'Porto Alegre do Norte': { lat: -10.8667, lon: -51.6333 }, 'Porto dos Gaúchos': { lat: -11.5239, lon: -57.4158 }, 'Porto Esperidião': { lat: -15.8542, lon: -58.4631 }, 'Porto Estrela': { lat: -15.3408, lon: -57.2181 }, 'Poxoréu': { lat: -15.8369, lon: -54.3892 }, 'Primavera do Leste': { lat: -15.5589, lon: -54.2958 }, 'Querência': { lat: -12.5833, lon: -52.3667 }, 'Reserva do Cabaçal': { lat: -15.0833, lon: -58.45 }, 'Ribeirão Cascalheira': { lat: -12.94, lon: -51.8239 }, 'Ribeirãozinho': { lat: -16.1667, lon: -52.6833 }, 'Rio Branco': { lat: -15.2539, lon: -58.1189 }, 'Rondolândia': { lat: -11.3833, lon: -61.4333 }, 'Rondonópolis': { lat: -16.4708, lon: -54.6358 }, 'Rosário Oeste': { lat: -14.8361, lon: -56.4281 }, 'Salto do Céu': { lat: -15.1333, lon: -58.15 }, 'Santa Carmem': { lat: -11.9167, lon: -55.2333 }, 'Santa Cruz do Xingu': { lat: -11.0833, lon: -51.8 }, 'Santa Rita do Trivelato': { lat: -13.8167, lon: -55.2667 }, 'Santa Terezinha': { lat: -10.4667, lon: -50.5167 }, 'Santo Afonso': { lat: -14.6333, lon: -56.8833 }, 'Santo Antônio do Leste': { lat: -14.8, lon: -53.6167 }, 'Santo Antônio do Leverger': { lat: -15.8658, lon: -56.0775 }, 'São Félix do Araguaia': { lat: -11.6167, lon: -50.6667 }, 'São José do Povo': { lat: -16.4667, lon: -54.2833 }, 'São José do Rio Claro': { lat: -13.45, lon: -56.7167 }, 'São José do Xingu': { lat: -10.8833, lon: -52.35 }, 'São José dos Quatro Marcos': { lat: -15.6333, lon: -58.1833 }, 'São Pedro da Cipa': { lat: -15.9667, lon: -54.9167 }, 'Sapezal': { lat: -13.5417, lon: -58.85 }, 'Serra Nova Dourada': { lat: -12.15, lon: -51.4667 }, 'Sinop': { lat: -11.8667, lon: -55.5 }, 'Sorriso': { lat: -12.55, lon: -55.7167 }, 'Tabaporã': { lat: -11.2833, lon: -56.9167 }, 'Tapurah': { lat: -12.7167, lon: -56.55 }, 'Terra Nova do Norte': { lat: -10.5167, lon: -55.2333 }, 'Tesouro': { lat: -16.0833, lon: -53.5333 }, 'Torixoréu': { lat: -16.2, lon: -52.55 }, 'União do Sul': { lat: -11.5, lon: -54.35 }, 'Vale de São Domingos': { lat: -15.0167, lon: -58.55 }, 'Várzea Grande': { lat: -15.6469, lon: -56.1322 }, 'Vera': { lat: -12.3, lon: -55.3167 }, 'Vila Bela da Santíssima Trindade': { lat: -15.0, lon: -59.95 }, 'Vila Rica': { lat: -10.0167, lon: -51.1167 } }
+        const citiesByState = { 'RO': { 'Alta Floresta D\'Oeste': { lat: -11.9283, lon: -61.9961 }, 'Alto Alegre dos Parecis': { lat: -12.128, lon: -61.821 }, 'Alto Paraíso': { lat: -9.71667, lon: -63.3169 }, 'Alvorada D\'Oeste': { lat: -11.3458, lon: -62.355 }, 'Ariquemes': { lat: -9.9133, lon: -63.0408 }, 'Buritis': { lat: -10.2033, lon: -63.8292 }, 'Cabixi': { lat: -13.4936, lon: -60.5511 }, 'Cacaulândia': { lat: -10.3478, lon: -62.8931 }, 'Cacoal': { lat: -11.4386, lon: -61.4478 }, 'Campo Novo de Rondônia': { lat: -10.5708, lon: -63.6192 }, 'Candeias do Jamari': { lat: -8.79056, lon: -63.7025 }, 'Castanheiras': { lat: -11.4178, lon: -61.9483 }, 'Cerejeiras': { lat: -13.1894, lon: -60.8161 }, 'Chupinguaia': { lat: -12.5492, lon: -60.8994 }, 'Colorado do Oeste': { lat: -13.1331, lon: -60.5503 }, 'Corumbiara': { lat: -12.9864, lon: -60.9419 }, 'Costa Marques': { lat: -12.4419, lon: -64.2294 }, 'Cujubim': { lat: -9.37028, lon: -62.5975 }, 'Espigão D\'Oeste': { lat: -11.525, lon: -61.0208 }, 'Governador Jorge Teixeira': { lat: -10.8631, lon: -62.7761 }, 'Guajará-Mirim': { lat: -10.7828, lon: -65.3361 }, 'Itapuã do Oeste': { lat: -9.28056, lon: -63.155 }, 'Jaru': { lat: -10.4389, lon: -62.4664 }, 'Ji-Paraná': { lat: -10.885, lon: -61.945 }, 'Machadinho D\'Oeste': { lat: -9.43194, lon: -61.98 }, 'Ministro Andreazza': { lat: -11.1969, lon: -61.5161 }, 'Mirante da Serra': { lat: -11.1736, lon: -62.6719 }, 'Monte Negro': { lat: -10.2933, lon: -63.3236 }, 'Nova Brasilândia D\'Oeste': { lat: -11.7108, lon: -62.3397 }, 'Nova Mamoré': { lat: -10.4072, lon: -65.3217 }, 'Nova União': { lat: -11.0503, lon: -62.5694 }, 'Novo Horizonte do Oeste': { lat: -11.7056, lon: -62.0017 }, 'Ouro Preto do Oeste': { lat: -10.7481, lon: -62.2158 }, 'Parecis': { lat: -12.21, lon: -61.5958 }, 'Pimenta Bueno': { lat: -11.6725, lon: -61.1925 }, 'Pimenteiras do Oeste': { lat: -13.4739, lon: -61.0458 }, 'Porto Velho': { lat: -8.7619, lon: -63.9039 }, 'Presidente Médici': { lat: -11.175, lon: -61.9014 }, 'Primavera de Rondônia': { lat: -11.8153, lon: -61.3208 }, 'Rio Crespo': { lat: -9.73333, lon: -62.9094 }, 'Rolim de Moura': { lat: -11.7258, lon: -61.7772 }, 'Santa Luzia D\'Oeste': { lat: -11.9139, lon: -61.7825 }, 'São Felipe D\'Oeste': { lat: -11.9011, lon: -61.4722 }, 'São Francisco do Guaporé': { lat: -12.0622, lon: -63.5756 }, 'São Miguel do Guaporé': { lat: -11.6917, lon: -62.7092 }, 'Seringueiras': { lat: -11.7333, lon: -63.0239 }, 'Teixeirópolis': { lat: -10.9667, lon: -62.2536 }, 'Theobroma': { lat: -10.2333, lon: -62.3417 }, 'Urupá': { lat: -11.135, lon: -62.365 }, 'Vale do Anari': { lat: -9.88333, lon: -62.15 }, 'Vale do Paraíso': { lat: -10.4286, lon: -62.1389 }, 'Vilhena': { lat: -12.7406, lon: -60.1458 } }, 'AC': { 'Acrelândia': { lat: -9.82778, lon: -66.8975 }, 'Assis Brasil': { lat: -10.9411, lon: -69.5703 }, 'Brasiléia': { lat: -11.0119, lon: -68.7481 }, 'Bujari': { lat: -9.83222, lon: -67.9511 }, 'Capixaba': { lat: -10.5739, lon: -67.6833 }, 'Cruzeiro do Sul': { lat: -7.6297, lon: -72.6708 }, 'Epitaciolândia': { lat: -11.0194, lon: -68.7369 }, 'Feijó': { lat: -8.16389, lon: -70.3536 }, 'Jordão': { lat: -9.43278, lon: -71.8883 }, 'Mâncio Lima': { lat: -7.61417, lon: -72.8958 }, 'Manoel Urbano': { lat: -8.83889, lon: -69.2597 }, 'Marechal Thaumaturgo': { lat: -8.93972, lon: -72.7381 }, 'Plácido de Castro': { lat: -10.3344, lon: -67.1856 }, 'Porto Acre': { lat: -9.58722, lon: -67.5333 }, 'Porto Walter': { lat: -8.26861, lon: -72.7439 }, 'Rio Branco': { lat: -9.974, lon: -67.81 }, 'Rodrigues Alves': { lat: -7.74028, lon: -72.6481 }, 'Santa Rosa do Purus': { lat: -9.7719, lon: -70.7336 }, 'Sena Madureira': { lat: -9.0667, lon: -68.6569 }, 'Senador Guiomard': { lat: -10.1503, lon: -67.5367 }, 'Taruacá': { lat: -8.1614, lon: -70.7661 }, 'Xapuri': { lat: -10.6519, lon: -68.5042 } }, 'MT': { 'Acorizal': { lat: -15.1953, lon: -56.3683 }, 'Água Boa': { lat: -14.3475, lon: -52.1558 }, 'Alta Floresta': { lat: -9.87556, lon: -56.0861 }, 'Alto Araguaia': { lat: -17.3147, lon: -53.2153 }, 'Alto Boa Vista': { lat: -11.6742, lon: -51.385 }, 'Alto Garças': { lat: -16.945, lon: -53.6289 }, 'Alto Paraguai': { lat: -14.5153, lon: -56.48 }, 'Alto Taquari': { lat: -17.8258, lon: -53.2825 }, 'Apiacás': { lat: -9.54167, lon: -57.4514 }, 'Araguaiana': { lat: -15.7278, lon: -51.8294 }, 'Araguainha': { lat: -16.855, lon: -53.0319 }, 'Araputanga': { lat: -15.4678, lon: -58.3497 }, 'Arenápolis': { lat: -14.4519, lon: -56.8458 }, 'Aripuanã': { lat: -10.165, lon: -59.4569 }, 'Barão de Melgaço': { lat: -16.195, lon: -55.9675 }, 'Barra do Bugres': { lat: -15.0747, lon: -57.1811 }, 'Barra do Garças': { lat: -15.8903, lon: -52.2567 }, 'Bom Jesus do Araguaia': { lat: -12.1833, lon: -51.35 }, 'Brasnorte': { lat: -12.1539, lon: -57.9786 }, 'Cáceres': { lat: -16.0708, lon: -57.6792 }, 'Campinápolis': { lat: -14.5028, lon: -52.8875 }, 'Campo Novo do Parecis': { lat: -13.6769, lon: -57.8889 }, 'Campo Verde': { lat: -15.545, lon: -55.1683 }, 'Campos de Júlio': { lat: -13.5244, lon: -59.0883 }, 'Canabrava do Norte': { lat: -11.0181, lon: -51.8317 }, 'Canarana': { lat: -13.5539, lon: -52.2706 }, 'Carlinda': { lat: -9.95, lon: -55.85 }, 'Castanheira': { lat: -11.1072, lon: -58.6017 }, 'Chapada dos Guimarães': { lat: -15.4606, lon: -55.7497 }, 'Cláudia': { lat: -11.5167, lon: -55.2 }, 'Cocalinho': { lat: -14.3853, lon: -51.0114 }, 'Colíder': { lat: -10.8189, lon: -55.4561 }, 'Colniza': { lat: -9.48889, lon: -59.215 }, 'Comodoro': { lat: -13.6639, lon: -59.785 }, 'Confresa': { lat: -10.6433, lon: -51.5694 }, 'Conquista D\'Oeste': { lat: -14.5511, lon: -59.5786 }, 'Cotriguaçu': { lat: -9.84917, lon: -58.2439 }, 'Cuiabá': { lat: -15.5989, lon: -56.0949 }, 'Curvelândia': { lat: -15.6186, lon: -57.9422 }, 'Denise': { lat: -14.7381, lon: -57.0531 }, 'Diamantino': { lat: -14.4086, lon: -56.4458 }, 'Dom Aquino': { lat: -15.8075, lon: -54.9189 }, 'Feliz Natal': { lat: -12.3917, lon: -54.9192 }, 'Figueirópolis D\'Oeste': { lat: -15.4419, lon: -58.7306 }, 'Gaúcha do Norte': { lat: -13.2425, lon: -53.0789 }, 'General Carneiro': { lat: -15.7083, lon: -52.7567 }, 'Glória D\'Oeste': { lat: -15.7558, lon: -58.3061 }, 'Guarantã do Norte': { lat: -9.78694, lon: -54.8889 }, 'Guiratinga': { lat: -16.3439, lon: -53.7581 }, 'Indiavaí': { lat: -15.4919, lon: -58.5789 }, 'Ipiranga do Norte': { lat: -12.2403, lon: -56.1533 }, 'Itanhangá': { lat: -12.2258, lon: -56.6461 }, 'Itaúba': { lat: -11.0617, lon: -55.2764 }, 'Itiquira': { lat: -17.2139, lon: -54.1422 }, 'Jaciara': { lat: -15.9658, lon: -54.9683 }, 'Jangada': { lat: -15.235, lon: -56.4917 }, 'Jauru': { lat: -15.3386, lon: -58.8728 }, 'Juara': { lat: -11.2639, lon: -57.5242 }, 'Juína': { lat: -11.3786, lon: -58.7481 }, 'Juruena': { lat: -10.3169, lon: -58.3594 }, 'Juscimeira': { lat: -16.0519, lon: -54.8828 }, 'Lambari D\'Oeste': { lat: -15.3189, lon: -58.0047 }, 'Lucas do Rio Verde': { lat: -13.0628, lon: -55.9172 }, 'Luciara': { lat: -11.2219, lon: -50.6675 }, 'Marcelândia': { lat: -11.1267, lon: -54.4378 }, 'Matupá': { lat: -10.0519, lon: -54.9317 }, 'Mirassol d\'Oeste': { lat: -15.6758, lon: -58.095 }, 'Nobres': { lat: -14.7192, lon: -56.3275 }, 'Nortelândia': { lat: -14.4539, lon: -56.8028 }, 'Nossa Senhora do Livramento': { lat: -15.7758, lon: -56.3433 }, 'Nova Bandeirantes': { lat: -9.84806, lon: -57.8139 }, 'Nova Brasilândia': { lat: -14.9611, lon: -54.9689 }, 'Nova Canaã do Norte': { lat: -10.5578, lon: -55.9536 }, 'Nova Guarita': { lat: -10.3069, lon: -55.4061 }, 'Nova Lacerda': { lat: -14.4758, lon: -59.5786 }, 'Nova Marilândia': { lat: -14.3628, lon: -56.9694 }, 'Nova Maringá': { lat: -13.0136, lon: -57.0908 }, 'Nova Monte Verde': { lat: -9.98, lon: -57.4761 }, 'Nova Mutum': { lat: -13.8233, lon: -56.0831 }, 'Nova Nazaré': { lat: -13.9886, lon: -51.7994 }, 'Nova Olímpia': { lat: -14.7886, lon: -57.2886 }, 'Nova Santa Helena': { lat: -10.865, lon: -55.1872 }, 'Nova Ubiratã': { lat: -12.9989, lon: -55.2553 }, 'Nova Xavantina': { lat: -14.6767, lon: -52.3539 }, 'Novo Horizonte do Norte': { lat: -11.4089, lon: -57.3489 }, 'Novo Mundo': { lat: -9.95611, lon: -55.1886 }, 'Novo Santo Antônio': { lat: -12.2883, lon: -50.9678 }, 'Novo São Joaquim': { lat: -14.9053, lon: -53.0192 }, 'Paranaíta': { lat: -9.66528, lon: -56.4789 }, 'Paranatinga': { lat: -14.4267, lon: -54.0528 }, 'Pedra Preta': { lat: -16.6222, lon: -54.4722 }, 'Peixoto de Azevedo': { lat: -10.2458, lon: -54.9906 }, 'Planalto da Serra': { lat: -14.665, lon: -54.7733 }, 'Poconé': { lat: -16.2561, lon: -56.6228 }, 'Pontal do Araguaia': { lat: -15.8369, lon: -52.7767 }, 'Ponte Branca': { lat: -16.7583, lon: -52.8369 }, 'Pontes e Lacerda': { lat: -15.2258, lon: -59.3433 }, 'Porto Alegre do Norte': { lat: -10.8769, lon: -51.6358 }, 'Porto dos Gaúchos': { lat: -11.5231, lon: -57.4139 }, 'Porto Esperidião': { lat: -15.8572, lon: -58.4619 }, 'Porto Estrela': { lat: -15.3236, lon: -57.2206 }, 'Poxoréu': { lat: -15.8372, lon: -54.3892 }, 'Primavera do Leste': { lat: -15.5239, lon: -54.3439 }, 'Querência': { lat: -12.6092, lon: -52.1822 }, 'Reserva do Cabaçal': { lat: -15.1228, lon: -58.3831 }, 'Ribeirão Cascalheira': { lat: -12.9369, lon: -51.8244 }, 'Ribeirãozinho': { lat: -16.4853, lon: -52.6925 }, 'Rio Branco': { lat: -15.2483, lon: -58.1258 }, 'Rondolândia': { lat: -10.8375, lon: -61.4694 }, 'Rondonópolis': { lat: -16.4708, lon: -54.6358 }, 'Rosário Oeste': { lat: -14.8358, lon: -56.4275 }, 'Salto do Céu': { lat: -15.1303, lon: -58.1317 }, 'Santa Carmem': { lat: -11.9125, lon: -55.2264 }, 'Santa Cruz do Xingu': { lat: -10.1531, lon: -52.3953 }, 'Santa Rita do Trivelato': { lat: -13.8106, lon: -55.2706 }, 'Santa Terezinha': { lat: -10.4703, lon: -50.5142 }, 'Santo Afonso': { lat: -14.4942, lon: -57.0056 }, 'Santo Antônio do Leste': { lat: -14.805, lon: -53.6078 }, 'Santo Antônio do Leverger': { lat: -15.8658, lon: -56.0769 }, 'São Félix do Araguaia': { lat: -11.615, lon: -50.6686 }, 'São José do Povo': { lat: -16.4658, lon: -54.2553 }, 'São José do Rio Claro': { lat: -13.4419, lon: -56.7217 }, 'São José do Xingu': { lat: -10.7972, lon: -52.7386 }, 'São José dos Quatro Marcos': { lat: -15.6275, lon: -58.1772 }, 'São Pedro da Cipa': { lat: -16.0008, lon: -54.9206 }, 'Sapezal': { lat: -13.545, lon: -58.8158 }, 'Serra Nova Dourada': { lat: -12.0894, lon: -51.4036 }, 'Sinop': { lat: -11.8639, lon: -55.5039 }, 'Sorriso': { lat: -12.5425, lon: -55.7211 }, 'Tabaporã': { lat: -11.3008, lon: -56.8311 }, 'Tangará da Serra': { lat: -14.6228, lon: -57.4933 }, 'Tapurah': { lat: -12.5328, lon: -56.5033 }, 'Terra Nova do Norte': { lat: -10.5172, lon: -55.2311 }, 'Tesouro': { lat: -16.0808, lon: -53.5539 }, 'Torixoréu': { lat: -16.1967, lon: -52.5569 }, 'União do Sul': { lat: -11.5308, lon: -54.1158 }, 'Vale de São Domingos': { lat: -15.2939, lon: -59.0667 }, 'Várzea Grande': { lat: -15.6469, lon: -56.1325 }, 'Vera': { lat: -12.3017, lon: -55.3044 }, 'Vila Bela da Santíssima Trindade': { lat: -15.0089, lon: -59.9503 }, 'Vila Rica': { lat: -10.0139, lon: -51.1186 } }
         };
 
-        const stateSelector = document.getElementById('state-selector');
-        const citySelector = document.getElementById('city-selector');
+        let map;
+        let cityMarkers = {};
+        let zoomTimeout;
+        const initialCoords = [-10, -60];
+        const initialZoom = 4;
 
-        function populateCitySelector(state) {
-            citySelector.innerHTML = '';
-            const cities = citiesByState[state];
-            const sortedCities = Object.keys(cities).sort((a, b) => a.localeCompare(b));
+        function initMap() {
+            const southWest = L.latLng(-35, -80),
+                  northEast = L.latLng(5, -45),
+                  bounds = L.latLngBounds(southWest, northEast);
+            map = L.map('map', { maxBounds: bounds, maxBoundsViscosity: 1.0, zoomControl: false }).setView(initialCoords, initialZoom);
+            L.control.zoom({ position: 'topright' }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+            map.on('moveend zoomend', function() {
+                clearTimeout(zoomTimeout);
+                zoomTimeout = setTimeout(function() {
+                    map.closePopup();
+                    map.flyTo(initialCoords, initialZoom, { animate: true, duration: 1.5 });
+                }, 15000);
+            });
+        }
+
+        async function onMarkerClick(e) {
+            const marker = e.target;
+            const { city, lat, lon } = marker.cityInfo;
             
-            for (const city of sortedCities) {
+            // Lógica robusta para reabrir e recarregar
+            if (!marker.getPopup()) {
+                marker.bindPopup(`<b>${city}</b><br>Carregando...`);
+            } else {
+                marker.setPopupContent(`<b>${city}</b><br>Carregando...`);
+            }
+            marker.openPopup();
+
+            try {
+                const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br&_=${new Date().getTime()}`;
+                const response = await fetch(url, { cache: 'no-cache' });
+                if (!response.ok) throw new Error('Falha ao buscar dados.');
+                const data = await response.json();
+                const popupContent = `<div style="font-family: 'Montserrat', sans-serif; line-height: 1.5;"><div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;"><img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" alt="${data.weather[0].description}" style="width: 40px; height: 40px; background-color: #e0f2fe; border-radius: 50%;"><div style="font-weight: bold; font-size: 16px;">${city}</div></div><div style="font-weight: 600; font-size: 18px; color: #333; margin-bottom: 4px;">${Math.round(data.main.temp)}°C</div><div style="text-transform: capitalize; color: #555;">${data.weather[0].description}</div><div style="font-size: 12px; color: #555;"><strong>Umidade:</strong> ${data.main.humidity}%</div><div style="font-size: 12px; color: #555;"><strong>Vento:</strong> ${Math.round(data.wind.speed * 3.6)} km/h</div></div>`;
+                marker.setPopupContent(popupContent);
+            } catch (error) {
+                marker.setPopupContent(`<b>${city}</b><br>Não foi possível carregar os dados.`);
+                console.error(error);
+            }
+        }
+
+        function updateMapMarkers(statesToShow) {
+            Object.values(cityMarkers).forEach(marker => map.removeLayer(marker));
+            cityMarkers = {};
+            const citiesToDisplay = [];
+            statesToShow.forEach(state => {
+                if (citiesByState[state]) {
+                    for (const city in citiesByState[state]) {
+                        citiesToDisplay.push({ city, state, ...citiesByState[state][city] });
+                    }
+                }
+            });
+            if (citiesToDisplay.length === 0) return;
+            const greenIcon = L.divIcon({ className: 'custom-div-icon', html: `<div style="background-color: #198754; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
+            citiesToDisplay.forEach(cityInfo => {
+                const marker = L.marker([cityInfo.lat, cityInfo.lon], { icon: greenIcon }).addTo(map);
+                marker.cityInfo = { city: cityInfo.city, lat: cityInfo.lat, lon: cityInfo.lon };
+                marker.on('click', onMarkerClick);
+                const uniqueKey = `${cityInfo.state}_${cityInfo.city}`;
+                cityMarkers[uniqueKey] = marker;
+            });
+        }
+
+        function setupMapFilters() {
+            const checkboxes = document.querySelectorAll('.state-filter-cb');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const selectedStates = Array.from(checkboxes).filter(i => i.checked).map(i => i.value);
+                    updateMapMarkers(selectedStates);
+                });
+            });
+        }
+
+        function updateCities() {
+            const stateSelector = document.getElementById('state-selector');
+            const citySelector = document.getElementById('city-selector');
+            const selectedState = stateSelector.value;
+            citySelector.innerHTML = '';
+            const cities = Object.keys(citiesByState[selectedState]).sort();
+            cities.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city;
                 option.textContent = city;
                 citySelector.appendChild(option);
-            }
+            });
+            updateWeatherData();
         }
 
-        async function getWeatherData(state, city) {
-            if (!citiesByState[state] || !citiesByState[state][city]) {
-                console.error(`Cidade ou estado inválido: ${city}, ${state}`);
-                return;
-            }
-            const { lat, lon } = citiesByState[state][city];
-            
-            const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br`;
-            const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br`;
-
+        async function updateWeatherData() {
+            const citySelector = document.getElementById('city-selector');
+            const selectedCity = citySelector.value;
+            const selectedState = document.getElementById('state-selector').value;
+            if (!selectedCity) return;
+            const coords = citiesByState[selectedState][selectedCity];
+            const lat = coords.lat;
+            const lon = coords.lon;
             try {
-                const [currentWeatherResponse, forecastResponse] = await Promise.all([
-                    fetch(currentWeatherUrl),
-                    fetch(forecastUrl)
-                ]);
-
-                if (!currentWeatherResponse.ok || !forecastResponse.ok) {
-                    throw new Error('Não foi possível obter os dados meteorológicos.');
-                }
-
-                const currentWeatherData = await currentWeatherResponse.json();
+                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br&_=${new Date().getTime()}`;
+                const weatherResponse = await fetch(weatherUrl, { cache: 'no-cache' });
+                if (!weatherResponse.ok) throw new Error('Erro ao buscar dados do tempo atual.');
+                const currentData = await weatherResponse.json();
+                document.getElementById('current-temp').textContent = `${Math.round(currentData.main.temp)}°C`;
+                document.getElementById('current-condition').textContent = currentData.weather[0].description;
+                document.getElementById('current-weather-icon').src = `https://openweathermap.org/img/wn/${currentData.weather[0].icon}@2x.png`;
+                document.getElementById('current-weather-icon').alt = `Ícone representando ${currentData.weather[0].description}`;
+                document.getElementById('current-humidity').textContent = `${currentData.main.humidity}%`;
+                document.getElementById('current-wind').textContent = `${Math.round(currentData.wind.speed * 3.6)} km/h`;
+                document.getElementById('current-pressure').textContent = `${currentData.main.pressure} hPa`;
+                
+                const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br&_=${new Date().getTime()}`;
+                const forecastResponse = await fetch(forecastUrl, { cache: 'no-cache' });
+                if (!forecastResponse.ok) throw new Error('Erro ao buscar previsão do tempo.');
                 const forecastData = await forecastResponse.json();
-
-                updateCurrentWeather(currentWeatherData);
-                updateForecast(forecastData);
-
-            } catch (error) {
-                console.error('Erro ao buscar dados da API:', error);
-                alert('Não foi possível carregar os dados do tempo. Verifique sua chave de API e a conexão com a internet.');
-            }
-        }
-        
-        function updateCurrentWeather(data) {
-            const description = data.weather[0].description;
-            document.getElementById('current-temp').textContent = `${Math.round(data.main.temp)}°C`;
-            document.getElementById('current-condition').textContent = description;
-            document.getElementById('current-humidity').textContent = `${data.main.humidity}%`;
-            document.getElementById('current-wind').textContent = `${Math.round(data.wind.speed * 3.6)} km/h`;
-            document.getElementById('current-pressure').textContent = `${data.main.pressure} hPa`;
-            
-            const iconCode = data.weather[0].icon;
-            const colorfulIconCode = iconCode.replace('n', 'd');
-            
-            const weatherIcon = document.getElementById('current-weather-icon');
-            weatherIcon.src = `https://openweathermap.org/img/wn/${colorfulIconCode}@2x.png`;
-            weatherIcon.alt = description;
-        }
-
-        function updateForecast(data) {
-            const dailyForecasts = {};
-            
-            for (const item of data.list) {
-                const date = item.dt_txt.split(' ')[0];
-                if (!dailyForecasts[date]) {
-                    dailyForecasts[date] = { temps: [], icons: [], conditions: [] };
-                }
-                dailyForecasts[date].temps.push(item.main.temp);
-                dailyForecasts[date].icons.push(item.weather[0].icon);
-                dailyForecasts[date].conditions.push(item.weather[0].description);
-            }
-
-            // =================== INÍCIO DA CORREÇÃO ===================
-            // Constrói a data "de hoje" com base no fuso horário local do usuário, 
-            // em vez de usar o padrão UTC que causava o erro.
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0'); // getMonth() é baseado em zero (0-11)
-            const day = String(now.getDate()).padStart(2, '0');
-            const today = `${year}-${month}-${day}`;
-            // =================== FIM DA CORREÇÃO ===================
-
-            delete dailyForecasts[today];
-
-            const forecastDays = Object.keys(dailyForecasts).slice(0, 3); 
-
-            forecastDays.forEach((dateString, index) => {
-                const dayData = dailyForecasts[dateString];
-                const dayIndex = index + 1;
-                
-                const forecastDate = new Date(`${dateString}T12:00:00`);
-                const formattedDate = forecastDate.toLocaleDateString('pt-BR', {
-                    weekday: 'short',
-                    day: '2-digit',
-                    month: '2-digit'
+                const dailyForecasts = forecastData.list.filter(item => item.dt_txt.includes("12:00:00")).slice(0, 3);
+                dailyForecasts.forEach((forecast, index) => {
+                    const i = index + 1;
+                    const date = new Date(forecast.dt * 1000);
+                    document.getElementById(`day-${i}-weekday`).textContent = date.toLocaleDateString('pt-BR', { weekday: 'long' });
+                    document.getElementById(`day-${i}-date`).textContent = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                    document.getElementById(`day-${i}-max`).textContent = Math.round(forecast.main.temp_max);
+                    document.getElementById(`day-${i}-min`).textContent = Math.round(forecast.main.temp_min);
+                    document.getElementById(`day-${i}-condition`).textContent = forecast.weather[0].description;
+                    document.getElementById(`day-${i}-icon`).src = `https://openweathermap.org/img/wn/${forecast.weather[0].icon}@2x.png`;
+                    document.getElementById(`day-${i}-icon`).alt = `Ícone representando ${forecast.weather[0].description}`;
                 });
-                const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-                document.getElementById(`day-${dayIndex}-date`).textContent = capitalizedDate;
+                const uniqueKey = `${selectedState}_${selectedCity}`;
+                if (cityMarkers[uniqueKey]) {
+                    const marker = cityMarkers[uniqueKey];
+                    map.flyTo(marker.getLatLng(), 10);
+                    marker.fire('click');
+                }
+            } catch (error) {
+                console.error("Falha ao carregar dados do tempo:", error);
+                document.getElementById('current-condition').textContent = 'Erro ao carregar';
+            }
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
 
-                const maxTemp = Math.round(Math.max(...dayData.temps));
-                const minTemp = Math.round(Math.min(...dayData.temps));
-                const mostCommonIcon = getMostFrequent(dayData.icons);
-                const mostCommonCondition = getMostFrequent(dayData.conditions);
-
-                document.getElementById(`day-${dayIndex}-max`).textContent = maxTemp;
-                document.getElementById(`day-${dayIndex}-min`).textContent = minTemp;
-                document.getElementById(`day-${dayIndex}-temp`).textContent = `${Math.round((maxTemp + minTemp) / 2)}°C`;
-                document.getElementById(`day-${dayIndex}-condition`).textContent = mostCommonCondition;
-                
-                const colorfulIconCode = mostCommonIcon.replace('n', 'd');
-
-                const forecastIcon = document.getElementById(`day-${dayIndex}-icon`);
-                forecastIcon.src = `https://openweathermap.org/img/wn/${colorfulIconCode}@2x.png`;
-                forecastIcon.alt = mostCommonCondition;
+        function setupImportFunctionality() {
+            const importButton = document.getElementById('import-button');
+            const importModal = document.getElementById('import-modal');
+            const closeButton = document.querySelector('.modal .close');
+            const cancelButton = document.getElementById('cancel-import');
+            const confirmButton = document.getElementById('confirm-import');
+            const fileInput = document.getElementById('file-input');
+            importButton.addEventListener('click', () => importModal.style.display = 'block');
+            const closeModal = () => { importModal.style.display = 'none'; fileInput.value = ''; };
+            closeButton.addEventListener('click', closeModal);
+            cancelButton.addEventListener('click', closeModal);
+            window.addEventListener('click', (event) => { if (event.target === importModal) closeModal(); });
+            confirmButton.addEventListener('click', () => {
+                if (fileInput.files.length > 0) {
+                    alert('Funcionalidade de importação em desenvolvimento. Arquivo selecionado: ' + fileInput.files[0].name);
+                    closeModal();
+                } else {
+                    alert('Por favor, selecione um arquivo para importar.');
+                }
             });
         }
-        
-        function getMostFrequent(arr) {
-            if (!arr || arr.length === 0) return '03d';
-            const hashmap = arr.reduce((acc, val) => {
-                acc[val] = (acc[val] || 0) + 1;
-                return acc;
-            }, {});
-            return Object.keys(hashmap).reduce((a, b) => hashmap[a] > hashmap[b] ? a : b);
-        }
 
-        const map = L.map('map').setView([-12.0, -60.0], 5);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-
-        async function fetchAndPlaceMarkers() {
-            const citiesToFetch = [];
-            for (const state in citiesByState) {
-                for (const city in citiesByState[state]) {
-                    citiesToFetch.push({ 
-                        name: city, 
-                        state: state,
-                        lat: citiesByState[state][city].lat, 
-                        lon: citiesByState[state][city].lon 
-                    });
+        function setupAccessibility() {
+            document.getElementById('contrast-toggle').addEventListener('click', () => {
+                document.body.classList.toggle('high-contrast');
+            });
+            const htmlEl = document.documentElement;
+            document.getElementById('font-increase').addEventListener('click', () => {
+                const currentSize = parseFloat(getComputedStyle(htmlEl).fontSize);
+                if (currentSize < 22) {
+                    htmlEl.style.fontSize = (currentSize * 1.1) + 'px';
                 }
-            }
-            
-            const promises = citiesToFetch.map(cityInfo =>
-                fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${cityInfo.lat}&lon=${cityInfo.lon}&appid=${apiKey}&units=metric&lang=pt_br`)
-                .then(response => response.ok ? response.json() : Promise.reject(`Erro em ${cityInfo.name}`))
-                .then(data => {
-                    const popupContent = `
-                        <div style="font-size: 14px; line-height: 1.5;">
-                            <strong style="font-size: 16px;">${cityInfo.name} - ${cityInfo.state}</strong><br>
-                            <hr style="margin: 4px 0;">
-                            <strong>Temperatura:</strong> ${Math.round(data.main.temp)}°C<br>
-                            <strong>Condição:</strong> <span style="text-transform: capitalize;">${data.weather[0].description}</span><br>
-                            <strong>Umidade:</strong> ${data.main.humidity}%<br>
-                            <strong>Vento:</strong> ${Math.round(data.wind.speed * 3.6)} km/h
-                        </div>
-                    `;
-
-                    L.circleMarker([cityInfo.lat, cityInfo.lon], {
-                        radius: 6,
-                        fillColor: "#008000",
-                        color: "#008000",
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    })
-                     .addTo(map)
-                     .bindPopup(popupContent);
-                })
-                .catch(error => console.error(error))
-            );
-
-            await Promise.all(promises);
+            });
+            document.getElementById('font-decrease').addEventListener('click', () => {
+                const currentSize = parseFloat(getComputedStyle(htmlEl).fontSize);
+                if (currentSize > 12) {
+                    htmlEl.style.fontSize = (currentSize * 0.9) + 'px';
+                }
+            });
+            document.getElementById('mobile-menu-button').addEventListener('click', function() {
+                const menu = document.getElementById('mobile-menu');
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                menu.classList.toggle('hidden');
+                this.setAttribute('aria-expanded', !isExpanded);
+            });
         }
 
-        stateSelector.addEventListener('change', (event) => {
-            const selectedState = event.target.value;
-            populateCitySelector(selectedState);
-            const firstCity = citySelector.value;
-            getWeatherData(selectedState, firstCity);
-        });
-
-        citySelector.addEventListener('change', (event) => {
-            const selectedState = stateSelector.value;
-            const selectedCity = event.target.value;
-            getWeatherData(selectedState, selectedCity);
-        });
-
-        window.addEventListener('load', () => {
-            const initialState = stateSelector.value;
-            populateCitySelector(initialState);
-            const initialCity = citySelector.value;
-            getWeatherData(initialState, initialCity);
-
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', options);
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            updateCities();
+            setupImportFunctionality();
+            setupAccessibility();
+            setupMapFilters();
             
-            fetchAndPlaceMarkers();
-        });
+            updateMapMarkers(['RO', 'AC', 'MT']);
+            
+            document.getElementById('state-selector').addEventListener('change', updateCities);
+            document.getElementById('city-selector').addEventListener('change', updateWeatherData);
 
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const menu = document.getElementById('mobile-menu');
-            const isExpanded = this.getAttribute('aria-expanded') === 'true';
-            this.setAttribute('aria-expanded', !isExpanded);
-            menu.classList.toggle('hidden');
-        });
-        
-        document.getElementById('contrast-toggle').addEventListener('click', () => document.body.classList.toggle('high-contrast'));
-        
-        document.getElementById('font-increase').addEventListener('click', () => {
-            const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-            document.documentElement.style.fontSize = `${currentSize + 1}px`;
-        });
-        
-        document.getElementById('font-decrease').addEventListener('click', () => {
-            const currentSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-            if (currentSize > 12) {
-                document.documentElement.style.fontSize = `${currentSize - 1}px`;
-            }
+            setInterval(updateWeatherData, 300000); // 5 minutos
         });
     </script>
 </body>
