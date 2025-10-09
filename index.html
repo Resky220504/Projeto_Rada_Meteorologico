@@ -368,6 +368,7 @@
             map = L.map('map', { maxBounds: bounds, maxBoundsViscosity: 1.0, zoomControl: false }).setView(initialCoords, initialZoom);
             L.control.zoom({ position: 'topright' }).addTo(map);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
+            
             map.on('moveend zoomend', function() {
                 clearTimeout(zoomTimeout);
                 zoomTimeout = setTimeout(function() {
@@ -379,26 +380,39 @@
 
         async function onMarkerClick(e) {
             const marker = e.target;
-            const { city, lat, lon } = marker.cityInfo;
-            
-            // Lógica robusta para reabrir e recarregar
+            const { city, state, lat, lon } = marker.cityInfo;
+
+            // Garante que o marcador tenha um pop-up e o abre com "Carregando..."
             if (!marker.getPopup()) {
-                marker.bindPopup(`<b>${city}</b><br>Carregando...`);
-            } else {
-                marker.setPopupContent(`<b>${city}</b><br>Carregando...`);
+                marker.bindPopup('');
             }
-            marker.openPopup();
+            marker.setPopupContent(`<b>${city}</b><br>Carregando...`).openPopup();
 
             try {
                 const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br&_=${new Date().getTime()}`;
                 const response = await fetch(url, { cache: 'no-cache' });
                 if (!response.ok) throw new Error('Falha ao buscar dados.');
+                
                 const data = await response.json();
-                const popupContent = `<div style="font-family: 'Montserrat', sans-serif; line-height: 1.5;"><div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 5px;"><img src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png" alt="${data.weather[0].description}" style="width: 40px; height: 40px; background-color: #e0f2fe; border-radius: 50%;"><div style="font-weight: bold; font-size: 16px;">${city}</div></div><div style="font-weight: 600; font-size: 18px; color: #333; margin-bottom: 4px;">${Math.round(data.main.temp)}°C</div><div style="text-transform: capitalize; color: #555;">${data.weather[0].description}</div><div style="font-size: 12px; color: #555;"><strong>Umidade:</strong> ${data.main.humidity}%</div><div style="font-size: 12px; color: #555;"><strong>Vento:</strong> ${Math.round(data.wind.speed * 3.6)} km/h</div></div>`;
-                marker.setPopupContent(popupContent);
+                const popupContent = `
+                    <div style="font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.5;">
+                        <strong style="font-size: 16px;">${city} - ${state}</strong><br>
+                        <hr style="margin: 4px 0;">
+                        <strong>Temperatura:</strong> ${Math.round(data.main.temp)}°C<br>
+                        <strong>Condição:</strong> <span style="text-transform: capitalize;">${data.weather[0].description}</span><br>
+                        <strong>Umidade:</strong> ${data.main.humidity}%<br>
+                        <strong>Vento:</strong> ${Math.round(data.wind.speed * 3.6)} km/h
+                    </div>`;
+                
+                // Atualiza o pop-up apenas se ele ainda estiver aberto
+                if (marker.isPopupOpen()) {
+                    marker.setPopupContent(popupContent);
+                }
             } catch (error) {
-                marker.setPopupContent(`<b>${city}</b><br>Não foi possível carregar os dados.`);
-                console.error(error);
+                console.error("Erro ao buscar dados do pop-up:", error);
+                if (marker.isPopupOpen()) {
+                    marker.setPopupContent(`<b>${city}</b><br>Não foi possível carregar os dados.`);
+                }
             }
         }
 
@@ -414,10 +428,17 @@
                 }
             });
             if (citiesToDisplay.length === 0) return;
-            const greenIcon = L.divIcon({ className: 'custom-div-icon', html: `<div style="background-color: #198754; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
+            
+            const greenIcon = L.divIcon({ 
+                className: 'custom-div-icon', 
+                html: `<div style="background-color: #198754; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`, 
+                iconSize: [14, 14], 
+                iconAnchor: [7, 7] 
+            });
+
             citiesToDisplay.forEach(cityInfo => {
                 const marker = L.marker([cityInfo.lat, cityInfo.lon], { icon: greenIcon }).addTo(map);
-                marker.cityInfo = { city: cityInfo.city, lat: cityInfo.lat, lon: cityInfo.lon };
+                marker.cityInfo = { city: cityInfo.city, state: cityInfo.state, lat: cityInfo.lat, lon: cityInfo.lon };
                 marker.on('click', onMarkerClick);
                 const uniqueKey = `${cityInfo.state}_${cityInfo.city}`;
                 cityMarkers[uniqueKey] = marker;
