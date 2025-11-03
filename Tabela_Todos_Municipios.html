@@ -25,7 +25,8 @@
             background-color: var(--dark-color);
             color: white;
         }
-        .focus-visible:focus {
+        /* Corrigido: Focus visible mais claro */
+        .focus-visible:focus-visible {
             outline: 3px solid var(--primary-color);
             outline-offset: 2px;
         }
@@ -115,14 +116,25 @@
                         </div>
                     </div>
                 </div>
+
+                <div>
+                    <label for="search-filter" class="block text-sm font-medium text-gray-700 mb-1">Busca Rápida (Município)</label>
+                    <input type="text" id="search-filter" placeholder="Digite o nome do município..." class="h-10 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                </div>
                 
                 <div class="flex flex-col justify-end">
-                    <button id="fetch-button" class="h-10 w-full bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 transition duration-300 flex items-center justify-center gap-2">
+                    <button id="fetch-button" class="h-10 w-full bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 transition duration-300 flex items-center justify-center gap-2 focus-visible">
                         <i class="fas fa-sync-alt"></i> Atualizar e Salvar
                     </button>
                 </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-4 mb-6">
+                <div></div>
+                <div></div>
+                
                 <div class="flex flex-col justify-end">
-                     <button id="clear-filters-button" class="h-10 w-full bg-gray-500 text-white font-bold py-2 px-4 rounded hover:bg-gray-600 transition duration-300 flex items-center justify-center gap-2">
+                     <button id="clear-filters-button" class="h-10 w-full bg-gray-500 text-white font-bold py-2 px-4 rounded hover:bg-gray-600 transition duration-300 flex items-center justify-center gap-2 focus-visible">
                         <i class="fas fa-times"></i> Limpar Filtros
                     </button>
                 </div>
@@ -140,10 +152,10 @@
                             <i class="fas fa-history mr-2"></i>Consultar Histórico
                         </h3>
                          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                            <select id="history-selector" class="h-10 border rounded-md px-3 py-2 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <select id="history-selector" class="h-10 border rounded-md px-3 py-2 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-green-500 focus-visible">
                                 <option value="">Nenhum histórico salvo</option>
                             </select>
-                            <button id="clear-history-button" class="h-10 bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition duration-300 flex items-center justify-center gap-2">
+                            <button id="clear-history-button" class="h-10 bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition duration-300 flex items-center justify-center gap-2 focus-visible">
                                 <i class="fas fa-trash"></i> Limpar Histórico
                             </button>
                          </div>
@@ -151,10 +163,10 @@
                     <div class="flex flex-col">
                          <label class="block text-sm font-medium text-gray-700 mb-1">Exportar Dados Filtrados</label>
                          <div class="flex gap-4">
-                             <button id="download-csv-button" class="h-10 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 flex items-center justify-center gap-2">
+                             <button id="download-csv-button" class="h-10 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300 flex items-center justify-center gap-2 focus-visible">
                                 <i class="fas fa-download"></i> CSV
                             </button>
-                            <button id="download-json-button" class="h-10 w-full bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-700 transition duration-300 flex items-center justify-center gap-2">
+                            <button id="download-json-button" class="h-10 w-full bg-purple-600 text-white font-bold py-2 px-4 rounded hover:bg-purple-700 transition duration-300 flex items-center justify-center gap-2 focus-visible">
                                 <i class="fas fa-file-code"></i> JSON
                             </button>
                          </div>
@@ -241,6 +253,8 @@
         const downloadJsonButton = document.getElementById('download-json-button');
         const stateFilter = document.getElementById('state-filter');
         const clearFiltersButton = document.getElementById('clear-filters-button');
+        // Adiciona a variável para o campo de busca
+        const searchFilter = document.getElementById('search-filter'); 
 
         const cityFilterContainer = document.getElementById('city-filter-container');
         const cityFilterButton = document.getElementById('city-filter-button');
@@ -385,8 +399,12 @@
             const selectedState = stateFilter.value;
             const checkedCheckboxes = cityFilterOptions.querySelectorAll('input:checked');
             const selectedCities = Array.from(checkedCheckboxes).map(cb => cb.value);
+            //  Captura o termo de busca
+            const searchTerm = searchFilter.value.toLowerCase().trim();
 
             const rows = tableBody.getElementsByTagName('tr');
+
+            let visibleRows = 0;
 
             for (const row of rows) {
                 if (row.cells.length < 7) continue;
@@ -396,17 +414,22 @@
                 
                 const stateMatch = selectedState === 'todos' || rowState === selectedState;
                 const cityMatch = selectedCities.length === 0 || selectedCities.includes('todos') || selectedCities.includes(rowCity);
+                // Verifica a correspondência da busca
+                const searchMatch = rowCity.toLowerCase().includes(searchTerm);
 
-                if (stateMatch && cityMatch) {
+                if (stateMatch && cityMatch && searchMatch) {
                     row.style.display = '';
+                    visibleRows++;
                 } else {
                     row.style.display = 'none';
                 }
             }
+            
         }
         
         function clearFilters() {
             stateFilter.value = 'todos';
+            searchFilter.value = ''; // Limpa o campo de busca
             populateCityFilter('todos');
             applyFilters();
         }
@@ -427,6 +450,7 @@
             const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
             csv.push(headers.join(','));
             table.querySelectorAll('tbody tr').forEach(row => {
+                // Apenas linhas visíveis E com células de dados
                 if (row.style.display !== 'none' && row.cells.length > 1) {
                     const rowData = Array.from(row.querySelectorAll('td')).map(td => `"${td.textContent.replace(/"/g, '""')}"`);
                     csv.push(rowData.join(','));
@@ -453,6 +477,7 @@
             const data = [];
             const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
             table.querySelectorAll('tbody tr').forEach(row => {
+                // Apenas linhas visíveis E com células de dados
                 if (row.style.display !== 'none' && row.cells.length > 1) {
                     const rowData = {};
                     Array.from(row.querySelectorAll('td')).forEach((td, index) => {
@@ -539,6 +564,8 @@
             applyFilters();
         });
         clearFiltersButton.addEventListener('click', clearFilters);
+        // NOVO: Adiciona listener para o campo de busca
+        searchFilter.addEventListener('input', applyFilters);
 
         window.addEventListener('load', () => {
             loadHistoryOptions();

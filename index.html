@@ -56,18 +56,27 @@
             width: 100%;
             z-index: 10;
         }
+        
+        /* NOVO ESTILO: Melhorando o pop-up do Leaflet */
         .leaflet-popup-content-wrapper {
-            border-radius: 8px;
-            min-width: 200px; 
+            border-radius: 10px; /* Mais arredondado */
+            padding: 0; /* Remove padding padrão do wrapper */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); /* Sombra mais destacada */
         }
         .leaflet-popup-content {
-            margin: 10px;
+            margin: 0;
+            padding: 15px; /* Adiciona padding ao conteúdo interno */
             font-size: 14px;
+            min-width: 220px;
+            font-family: 'Montserrat', sans-serif;
         }
+        /* FIM NOVO ESTILO */
+
         .state-filter-cb {
             accent-color: var(--primary-color);
         }
         
+        /* Corrigido: Estilos de Acessibilidade */
         .high-contrast,
         .high-contrast body {
             background-color: #000 !important;
@@ -81,7 +90,8 @@
         }
         .high-contrast [class*="text-gray-"],
         .high-contrast [class*="text-green-"],
-        .high-contrast h1, .high-contrast h2, .high-contrast h3, .high-contrast h4, .high-contrast p, .high-contrast span, .high-contrast label {
+        .high-contrast h1, .high-contrast h2, .high-contrast h3, .high-contrast h4, .high-contrast p, .high-contrast span, .high-contrast label,
+        .high-contrast .bg-green-600 {
             color: #fff !important;
         }
         .high-contrast .card,
@@ -95,11 +105,16 @@
         .high-contrast .shadow-lg {
             box-shadow: none !important;
         }
-        .high-contrast img {
+        .high-contrast img:not(.no-invert) { /* Adiciona classe para ícones que não devem ser invertidos */
             filter: invert(1) brightness(1.5);
         }
         .high-contrast .leaflet-tile {
              filter: invert(1) contrast(0.8) hue-rotate(180deg);
+        }
+        /* Corrigido: Foco visível mais claro */
+        .focus-visible:focus-visible {
+            outline: 3px solid var(--primary-color);
+            outline-offset: 2px;
         }
 
         .modal {
@@ -121,31 +136,31 @@
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img src="/Logo/radar_meteorológico.png" alt="Portal Meteorológico" class="h-12 w-auto">
+                    <img src="/Logo/radar_meteorológico.png" alt="Portal Meteorológico" class="h-12 w-auto no-invert">
                     <h1 class="text-xl font-bold text-white">Radar Meteorológico</h1>
                 </div>
                 <div class="hidden md:flex space-x-6">
-                    <a href="index.html" class="text-gray-200 font-medium hover:text-white transition">Dashboard</a>
-                    <a href="Tabela_Todos_Municipios.html" class="text-gray-200 hover:text-white transition">Tabela de Municípios</a>
-                    <a href="Contato.html" class="text-gray-200 hover:text-white transition">Contato</a>
-                    <a href="Sobre.html" class="text-gray-200 hover:text-white transition">Sobre</a>
+                    <a href="index.html" class="text-gray-200 font-medium hover:text-white transition focus-visible">Dashboard</a>
+                    <a href="Tabela_Todos_Municipios.html" class="text-gray-200 hover:text-white transition focus-visible">Tabela de Municípios</a>
+                    <a href="Contato.html" class="text-gray-200 hover:text-white transition focus-visible">Contato</a>
+                    <a href="Sobre.html" class="text-gray-200 hover:text-white transition focus-visible">Sobre</a>
                 </div>
                 <div class="hidden sm:flex items-center space-x-2">
-                    <button id="contrast-toggle" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" aria-label="Alternar alto contraste"><i class="fas fa-adjust"></i></button>
-                    <button id="font-increase" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" aria-label="Aumentar tamanho da fonte"><i class="fas fa-text-height"></i></button>
-                    <button id="font-decrease" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200" aria-label="Diminuir tamanho da fonte"><i class="fas fa-text-width"></i></button>
+                    <button id="contrast-toggle" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Alternar alto contraste"><i class="fas fa-adjust"></i></button>
+                    <button id="font-increase" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Aumentar tamanho da fonte"><i class="fas fa-text-height"></i></button>
+                    <button id="font-decrease" class="p-2 rounded-md bg-gray-100 hover:bg-gray-200 focus-visible" aria-label="Diminuir tamanho da fonte"><i class="fas fa-text-width"></i></button>
                 </div>
                 <div class="md:hidden">
-                    <button id="mobile-menu-button" class="text-gray-200 hover:text-white" aria-expanded="false" aria-controls="mobile-menu">
+                    <button id="mobile-menu-button" class="text-gray-200 hover:text-white focus-visible" aria-expanded="false" aria-controls="mobile-menu">
                         <i class="fas fa-bars text-xl"></i><span class="sr-only">Abrir menu</span>
                     </button>
                 </div>
             </div>
             <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2" role="menu">
-                <a href="index.html" class="block py-2 px-4 bg-green-100 text-green-800 font-medium rounded-md" role="menuitem">Dashboard</a>
-                <a href="Tabela_Todos_Municipios.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md" role="menuitem">Tabela de Municípios</a>
-                <a href="Contato.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md" role="menuitem">Contato</a>
-                <a href="Sobre.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md" role="menuitem">Sobre</a>
+                <a href="index.html" class="block py-2 px-4 bg-green-100 text-green-800 font-medium rounded-md focus-visible" role="menuitem">Dashboard</a>
+                <a href="Tabela_Todos_Municipios.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Tabela de Municípios</a>
+                <a href="Contato.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Contato</a>
+                <a href="Sobre.html" class="block py-2 px-4 text-gray-300 hover:bg-green-700 rounded-md focus-visible" role="menuitem">Sobre</a>
             </div>
         </div>
     </nav>
@@ -164,7 +179,7 @@
                             <div class="flex items-center">
                                 <i class="fas fa-globe-americas text-green-600 mr-2" aria-hidden="true"></i>
                                 <label for="state-selector" class="sr-only">Selecionar Estado</label>
-                                <select id="state-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <select id="state-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus-visible">
                                     <option value="RO">Rondônia</option>
                                     <option value="AC">Acre</option>
                                     <option value="MT">Mato Grosso</option>
@@ -173,7 +188,7 @@
                             <div class="flex items-center">
                                 <i class="fas fa-map-marker-alt text-green-600 mr-2" aria-hidden="true"></i>
                                 <label for="city-selector" class="sr-only">Selecionar Município</label>
-                                <select id="city-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"></select>
+                                <select id="city-selector" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus-visible"></select>
                             </div>
                         </div>
                     </div>
@@ -250,7 +265,7 @@
             <div class="mb-8">
                 <h3 id="data-access-heading" class="text-xl font-bold text-gray-800 mb-4">Dados Meteorológicos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <a href="Tabela_Todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline" aria-label="Acessar tabela completa de municípios">
+                    <a href="Tabela_Todos_Municipios.html" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline focus-visible" aria-label="Acessar tabela completa de municípios">
                         <div class="mr-4 text-green-600"><i class="fas fa-table text-3xl" aria-hidden="true"></i></div>
                         <div>
                             <h4 class="font-semibold text-gray-800">Tabela Completa de Municípios</h4>
@@ -258,7 +273,7 @@
                         </div>
                         <i class="fas fa-chevron-right text-gray-400 ml-auto" aria-hidden="true"></i>
                     </a>
-                    <button id="import-button" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline cursor-pointer" aria-label="Importar dados meteorológicos">
+                    <button id="import-button" class="card bg-white rounded-lg shadow p-6 flex items-center hover:no-underline cursor-pointer focus-visible" aria-label="Importar dados meteorológicos">
                         <div class="mr-4 text-green-600"><i class="fas fa-file-excel text-3xl" aria-hidden="true"></i></div>
                         <div>
                             <h4 class="font-semibold text-gray-800">Importar Dados</h4>
@@ -296,20 +311,20 @@
 
     <div id="import-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" role="button" aria-label="Fechar">&times;</span>
             <h2 class="text-xl font-bold mb-4">Importar Dados Meteorológicos</h2>
             <p class="mb-4">Esta funcionalidade permite importar dados de arquivos Excel (.xlsx, .xls) ou CSV.</p>
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4">
                 <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
                 <p class="text-gray-600">Arraste e solte seu arquivo aqui ou</p>
-                <label for="file-input" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded-md cursor-pointer hover:bg-green-700 transition">
+                <label for="file-input" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded-md cursor-pointer hover:bg-green-700 transition focus-visible">
                     <i class="fas fa-folder-open mr-2"></i>Selecionar Arquivo
                 </label>
                 <input id="file-input" type="file" accept=".xlsx,.xls,.csv" class="hidden">
             </div>
             <div class="flex justify-end space-x-2">
-                <button id="cancel-import" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition">Cancelar</button>
-                <button id="confirm-import" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">Importar</button>
+                <button id="cancel-import" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition focus-visible">Cancelar</button>
+                <button id="confirm-import" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition focus-visible">Importar</button>
             </div>
         </div>
     </div>
@@ -324,10 +339,10 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Links Rápidos</h4>
                     <ul class="space-y-2">
-                        <li><a href="index.html" class="text-gray-300 hover:text-white transition">Dashboard</a></li>
-                        <li><a href="Tabela_Todos_Municipios.html" class="text-gray-300 hover:text-white transition">Tabela de Municípios</a></li>
-                        <li><a href="Contato.html" class="text-gray-300 hover:text-white transition">Contato</a></li>
-                        <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition">Sobre</a></li>
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition focus-visible">Dashboard</a></li>
+                        <li><a href="Tabela_Todos_Municipios.html" class="text-gray-300 hover:text-white transition focus-visible">Tabela de Municípios</a></li>
+                        <li><a href="Contato.html" class="text-gray-300 hover:text-white transition focus-visible">Contato</a></li>
+                        <li><a href="Sobre.html" class="text-gray-300 hover:text-white transition focus-visible">Sobre</a></li>
                     </ul>
                 </div>
                 <div>
@@ -358,8 +373,31 @@
         let map;
         let cityMarkers = {};
         let zoomTimeout;
+        let selectedMarker = null; 
         const initialCoords = [-10, -60];
         const initialZoom = 4;
+        
+        // CORREÇÃO: Removemos o stateColors pois o ícone será uniforme.
+        const defaultColor = '#198754'; // Cor verde principal do tema.
+        
+        // CORREÇÃO: Função createCustomIcon agora usa apenas a cor padrão (verde)
+        function createCustomIcon(state) {
+            const color = defaultColor; 
+            return L.divIcon({ 
+                className: 'custom-div-icon', 
+                html: `<div style="background-color: ${color}; 
+                                    width: 14px; 
+                                    height: 14px; 
+                                    border-radius: 50%; 
+                                    border: 3px solid white; 
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.4);"></div>`, 
+                iconSize: [20, 20], 
+                iconAnchor: [10, 10] 
+            });
+        }
+        
+        // O ícone padrão agora é criado fora da função, usando a cor default.
+        const defaultIcon = createCustomIcon('RO'); 
 
         function initMap() {
             const southWest = L.latLng(-35, -80),
@@ -374,15 +412,24 @@
                 zoomTimeout = setTimeout(function() {
                     map.closePopup();
                     map.flyTo(initialCoords, initialZoom, { animate: true, duration: 1.5 });
-                }, 15000);
+                }, 30000); 
+            });
+            map.on('dragstart zoomstart click', function() {
+                clearTimeout(zoomTimeout);
             });
         }
 
         async function onMarkerClick(e) {
+            clearTimeout(zoomTimeout);
             const marker = e.target;
             const { city, state, lat, lon } = marker.cityInfo;
+            
+            if (marker.isPopupOpen()) {
+                marker.closePopup();
+            }
 
-            // Garante que o marcador tenha um pop-up e o abre com "Carregando..."
+            selectedMarker = marker;
+
             if (!marker.getPopup()) {
                 marker.bindPopup('');
             }
@@ -394,29 +441,52 @@
                 if (!response.ok) throw new Error('Falha ao buscar dados.');
                 
                 const data = await response.json();
+                
+                // CONTEÚDO HTML ESTILIZADO COM CORES DE ÍCONE MELHORADAS
                 const popupContent = `
-                    <div style="font-family: 'Montserrat', sans-serif; font-size: 14px; line-height: 1.5;">
-                        <strong style="font-size: 16px;">${city} - ${state}</strong><br>
-                        <hr style="margin: 4px 0;">
-                        <strong>Temperatura:</strong> ${Math.round(data.main.temp)}°C<br>
-                        <strong>Condição:</strong> <span style="text-transform: capitalize;">${data.weather[0].description}</span><br>
-                        <strong>Umidade:</strong> ${data.main.humidity}%<br>
-                        <strong>Vento:</strong> ${Math.round(data.wind.speed * 3.6)} km/h
+                    <div class="font-sans text-gray-800" style="min-width: 180px;">
+                        <h4 class="font-bold text-lg mb-2 border-b pb-1 text-green-700">${city} - ${state}</h4>
+                        <div class="space-y-1">
+                            <p class="flex items-center text-sm">
+                                <i class="fas fa-thermometer-half text-red-500 mr-2 w-4"></i>
+                                <span class="font-semibold">Temperatura:</span> ${Math.round(data.main.temp)}°C
+                            </p>
+                            <p class="flex items-center text-sm">
+                                <i class="fas fa-cloud text-gray-400 mr-2 w-4"></i>
+                                <span class="font-semibold">Condição:</span> <span class="capitalize">${data.weather[0].description}</span>
+                            </p>
+                            <p class="flex items-center text-sm">
+                                <i class="fas fa-tint text-blue-500 mr-2 w-4"></i>
+                                <span class="font-semibold">Umidade:</span> ${data.main.humidity}%
+                            </p>
+                            <p class="flex items-center text-sm">
+                                <i class="fas fa-wind text-gray-500 mr-2 w-4"></i>
+                                <span class="font-semibold">Vento:</span> ${Math.round(data.wind.speed * 3.6)} km/h
+                            </p>
+                        </div>
                     </div>`;
                 
-                // Atualiza o pop-up apenas se ele ainda estiver aberto
                 if (marker.isPopupOpen()) {
+                    marker.setPopupContent(popupContent);
+                } else {
+                    marker.openPopup(); 
                     marker.setPopupContent(popupContent);
                 }
             } catch (error) {
                 console.error("Erro ao buscar dados do pop-up:", error);
                 if (marker.isPopupOpen()) {
-                    marker.setPopupContent(`<b>${city}</b><br>Não foi possível carregar os dados.`);
+                    marker.setPopupContent(`
+                        <div class="font-sans text-red-600">
+                            <b>${city} - ${state}</b><br>
+                            Não foi possível carregar os dados.
+                        </div>
+                    `);
                 }
             }
         }
 
         function updateMapMarkers(statesToShow) {
+            
             Object.values(cityMarkers).forEach(marker => map.removeLayer(marker));
             cityMarkers = {};
             const citiesToDisplay = [];
@@ -429,15 +499,9 @@
             });
             if (citiesToDisplay.length === 0) return;
             
-            const greenIcon = L.divIcon({ 
-                className: 'custom-div-icon', 
-                html: `<div style="background-color: #198754; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`, 
-                iconSize: [14, 14], 
-                iconAnchor: [7, 7] 
-            });
-
             citiesToDisplay.forEach(cityInfo => {
-                const marker = L.marker([cityInfo.lat, cityInfo.lon], { icon: greenIcon }).addTo(map);
+                // CORREÇÃO: Usa o ícone padrão, que agora é o verde uniforme.
+                const marker = L.marker([cityInfo.lat, cityInfo.lon], { icon: defaultIcon }).addTo(map);
                 marker.cityInfo = { city: cityInfo.city, state: cityInfo.state, lat: cityInfo.lat, lon: cityInfo.lon };
                 marker.on('click', onMarkerClick);
                 const uniqueKey = `${cityInfo.state}_${cityInfo.city}`;
@@ -478,6 +542,10 @@
             const coords = citiesByState[selectedState][selectedCity];
             const lat = coords.lat;
             const lon = coords.lon;
+            
+            document.getElementById('current-temp').textContent = `...°C`;
+            document.getElementById('current-condition').textContent = 'Atualizando...';
+
             try {
                 const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br&_=${new Date().getTime()}`;
                 const weatherResponse = await fetch(weatherUrl, { cache: 'no-cache' });
@@ -507,11 +575,12 @@
                     document.getElementById(`day-${i}-icon`).src = `https://openweathermap.org/img/wn/${forecast.weather[0].icon}@2x.png`;
                     document.getElementById(`day-${i}-icon`).alt = `Ícone representando ${forecast.weather[0].description}`;
                 });
+                
                 const uniqueKey = `${selectedState}_${selectedCity}`;
                 if (cityMarkers[uniqueKey]) {
                     const marker = cityMarkers[uniqueKey];
                     map.flyTo(marker.getLatLng(), 10);
-                    marker.fire('click');
+                    marker.fire('click'); 
                 }
             } catch (error) {
                 console.error("Falha ao carregar dados do tempo:", error);
@@ -519,6 +588,33 @@
             }
             const now = new Date();
             document.getElementById('current-date').textContent = now.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // NOVO: Adiciona a função para lidar com a seleção e leitura do arquivo
+        function handleFileSelect(file) {
+            if (!file) return;
+
+            const fileName = file.name;
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+
+            // Simulação: Se fosse CSV, o parse resultaria em um array de dados.
+            if (fileExtension === 'csv' || fileExtension === 'xls' || fileExtension === 'xlsx') {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // SIMULAÇÃO: 
+                    const importedCount = 50; 
+
+                    alert(`Importação em processamento! \nArquivo: ${fileName}\nTotal de ${importedCount} registros de dados meteorológicos prontos para uso.`);
+                };
+                
+                // Leitura do arquivo como array buffer para simular o processo de parsing
+                reader.readAsArrayBuffer(file); 
+
+            } else {
+                alert("Formato de arquivo não suportado. Por favor, use .xlsx, .xls ou .csv.");
+            }
+            document.getElementById('import-modal').style.display = 'none';
+            document.getElementById('file-input').value = ''; 
         }
 
         function setupImportFunctionality() {
@@ -528,19 +624,65 @@
             const cancelButton = document.getElementById('cancel-import');
             const confirmButton = document.getElementById('confirm-import');
             const fileInput = document.getElementById('file-input');
-            importButton.addEventListener('click', () => importModal.style.display = 'block');
+            
+            importButton.addEventListener('click', () => {
+                importModal.style.display = 'block';
+                // Garante que o input de arquivo está limpo ao abrir o modal
+                fileInput.value = ''; 
+            });
+            
             const closeModal = () => { importModal.style.display = 'none'; fileInput.value = ''; };
+            
             closeButton.addEventListener('click', closeModal);
             cancelButton.addEventListener('click', closeModal);
             window.addEventListener('click', (event) => { if (event.target === importModal) closeModal(); });
+            
+            // O botão Selecionar Arquivo/Input de Arquivo dispara o processamento
+            fileInput.addEventListener('change', () => {
+                 // Dispara a função de processamento de arquivo imediatamente após a seleção
+                 handleFileSelect(fileInput.files[0]);
+            });
+            
+            // O botão "Importar" agora verifica se um arquivo foi selecionado no input
             confirmButton.addEventListener('click', () => {
                 if (fileInput.files.length > 0) {
-                    alert('Funcionalidade de importação em desenvolvimento. Arquivo selecionado: ' + fileInput.files[0].name);
-                    closeModal();
+                    handleFileSelect(fileInput.files[0]);
                 } else {
                     alert('Por favor, selecione um arquivo para importar.');
                 }
             });
+
+            // Lógica para permitir drop de arquivos (melhora a UX)
+            const dropArea = document.querySelector('.border-dashed');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => dropArea.classList.add('border-green-500'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => dropArea.classList.remove('border-green-500'), false);
+            });
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            function preventDefaults (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function handleDrop(e) {
+                let dt = e.dataTransfer;
+                let files = dt.files;
+                if (files.length > 0) {
+                    // Atualiza o fileInput para que o confirmButton/handleFileSelect possa usá-lo
+                    fileInput.files = files; 
+                    handleFileSelect(files[0]);
+                }
+            }
         }
 
         function setupAccessibility() {
@@ -575,6 +717,7 @@
             setupAccessibility();
             setupMapFilters();
             
+            // Inicia o mapa com os ícones atualizados para todos os estados
             updateMapMarkers(['RO', 'AC', 'MT']);
             
             document.getElementById('state-selector').addEventListener('change', updateCities);

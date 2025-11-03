@@ -25,7 +25,8 @@
             background-color: var(--dark-color);
             color: white;
         }
-        .focus-visible:focus {
+        /* Corrigido: Focus visible mais claro */
+        .focus-visible:focus-visible {
             outline: 3px solid var(--primary-color);
             outline-offset: 2px;
         }
@@ -75,7 +76,7 @@
             <section class="mb-8">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-4" style="color: var(--secondary-color);">Nossos Dados</h2>
                 <p class="text-gray-600 leading-relaxed mb-4">
-                    Utilizamos a API da <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:underline">OpenWeatherMap</a>, uma das fontes mais confiáveis de dados meteorológicos do mundo. Isso nos permite oferecer previsões do tempo, informações sobre temperatura, umidade, vento e outras variáveis climáticas com alta precisão.
+                    Utilizamos a API da <a href="https://openweathermap.org/" target="_blank" rel="noopener noreferrer" class="text-green-600 hover:underline focus-visible">OpenWeatherMap</a>, uma das fontes mais confiáveis de dados meteorológicos do mundo. Isso nos permite oferecer previsões do tempo, informações sobre temperatura, umidade, vento e outras variáveis climáticas com alta precisão.
                 </p>
                 <p class="text-gray-600 leading-relaxed">
                     Todos os dados são atualizados constantemente para garantir que você sempre tenha as informações mais recentes à sua disposição, seja para planejar suas atividades diárias, monitorar a agricultura ou para a defesa civil.
