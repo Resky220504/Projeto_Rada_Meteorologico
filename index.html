@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portal Meteorológico</title>
+    <title>Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    <script src="https://vlibras.gov.br/vlibras-plugin.js"></script> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
 
@@ -132,12 +132,19 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+    
     <nav class="navbar py-4" aria-label="Navegação principal">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img src="/Logo/radar_meteorológico.png" alt="Portal Meteorológico" class="h-12 w-auto no-invert">
-                    <h1 class="text-xl font-bold text-white">Radar Meteorológico</h1>
+                    <img src="/Logo/radar_meteorológico.png" alt="Nexus" class="h-12 w-auto no-invert">
+                    <h1 class="text-xl font-bold text-white">Nexus</h1>
                 </div>
                 <div class="hidden md:flex space-x-6">
                     <a href="index.html" class="text-gray-200 font-medium hover:text-white transition focus-visible">Dashboard</a>
@@ -333,7 +340,7 @@
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">Portal Meteorológico</h4>
+                    <h4 class="text-lg font-semibold mb-4">Nexus</h4>
                     <p class="text-gray-300">Fornecendo informações meteorológicas precisas para a região amazônica.</p>
                 </div>
                 <div>
@@ -349,13 +356,13 @@
                     <h4 class="text-lg font-semibold mb-4">Contato</h4>
                     <ul class="space-y-2 text-gray-300">
                         <li class="flex items-center"><i class="fas fa-phone mr-2" aria-hidden="true"></i><span>(69) 99264-6823</span></li>
-                        <li class="flex items-center"><i class="fas fa-envelope mr-2" aria-hidden="true"></i><span>contato@Portalmeteorológico</span></li>
+                        <li class="flex items-center"><i class="fas fa-envelope mr-2" aria-hidden="true"></i><span>contato@Nexus</span></li>
                         <li class="flex items-center"><i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i><span>Antonio Fraga Moreira, 3816</span></li>
                     </ul>
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
-                <p>&copy; 2025 Portal Meteorológico - Todos os direitos reservados.</p>
+                <p>&copy; 2025 Nexus - Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -372,15 +379,13 @@
 
         let map;
         let cityMarkers = {};
-        let zoomTimeout;
+        let zoomTimeout; // Variável movida para o escopo global
         let selectedMarker = null; 
         const initialCoords = [-10, -60];
         const initialZoom = 4;
         
-        // CORREÇÃO: Removemos o stateColors pois o ícone será uniforme.
-        const defaultColor = '#198754'; // Cor verde principal do tema.
+        const defaultColor = '#198754';
         
-        // CORREÇÃO: Função createCustomIcon agora usa apenas a cor padrão (verde)
         function createCustomIcon(state) {
             const color = defaultColor; 
             return L.divIcon({ 
@@ -396,31 +401,40 @@
             });
         }
         
-        // O ícone padrão agora é criado fora da função, usando a cor default.
         const defaultIcon = createCustomIcon('RO'); 
+
+        // Função para iniciar/reiniciar o temporizador
+        function resetMapTimer() {
+            clearTimeout(zoomTimeout);
+            zoomTimeout = setTimeout(function() {
+                // Ao forçar o retorno ao zoom, fecha o pop-up, se houver
+                map.closePopup(); 
+                map.flyTo(initialCoords, initialZoom, { animate: true, duration: 1.5 });
+            }, 30000); // 30 segundos
+        }
 
         function initMap() {
             const southWest = L.latLng(-35, -80),
                   northEast = L.latLng(5, -45),
                   bounds = L.latLngBounds(southWest, northEast);
+            // setView usa initialCoords e initialZoom ([-10, -60], 4)
             map = L.map('map', { maxBounds: bounds, maxBoundsViscosity: 1.0, zoomControl: false }).setView(initialCoords, initialZoom);
             L.control.zoom({ position: 'topright' }).addTo(map);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
             
-            map.on('moveend zoomend', function() {
-                clearTimeout(zoomTimeout);
-                zoomTimeout = setTimeout(function() {
-                    map.closePopup();
-                    map.flyTo(initialCoords, initialZoom, { animate: true, duration: 1.5 });
-                }, 30000); 
+            // Adiciona a escuta de eventos para reiniciar o timer em qualquer interação
+            map.on('moveend zoomend dragstart zoomstart click', function() {
+                resetMapTimer();
             });
-            map.on('dragstart zoomstart click', function() {
-                clearTimeout(zoomTimeout);
-            });
+            
+            // Inicia o timer na inicialização
+            resetMapTimer(); 
         }
 
         async function onMarkerClick(e) {
-            clearTimeout(zoomTimeout);
+            // Reinicia o timer ao clicar no marcador
+            resetMapTimer(); 
+
             const marker = e.target;
             const { city, state, lat, lon } = marker.cityInfo;
             
@@ -483,6 +497,8 @@
                     `);
                 }
             }
+            // Adiciona escuta para reiniciar o timer quando o pop-up fechar
+            marker.getPopup().on('remove', resetMapTimer);
         }
 
         function updateMapMarkers(statesToShow) {
@@ -579,8 +595,7 @@
                 const uniqueKey = `${selectedState}_${selectedCity}`;
                 if (cityMarkers[uniqueKey]) {
                     const marker = cityMarkers[uniqueKey];
-                    map.flyTo(marker.getLatLng(), 10);
-                    marker.fire('click'); 
+                    // REMOVIDO: map.flyTo(marker.getLatLng(), 10); para evitar zoom no município selecionado no dropdown
                 }
             } catch (error) {
                 console.error("Falha ao carregar dados do tempo:", error);
@@ -717,7 +732,7 @@
             setupAccessibility();
             setupMapFilters();
             
-            // Inicia o mapa com os ícones atualizados para todos os estados
+            // Chama a atualização inicial com todos os estados selecionados (Marcadores visíveis na carga)
             updateMapMarkers(['RO', 'AC', 'MT']);
             
             document.getElementById('state-selector').addEventListener('change', updateCities);
